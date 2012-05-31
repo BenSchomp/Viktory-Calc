@@ -1,0 +1,72 @@
+body {
+  background-image:url('hexellence.png');
+}
+
+h1 {
+  text-align: center;
+}
+
+#wrapper {
+  width: 775px;
+}
+
+#landbattle {
+  width: 50%;
+  float: left;
+}
+
+#results {
+  width: 50%;
+  float: right;
+}
+
+#misc {
+ width: 50%;
+ float: right;
+ text-align: center;
+ margin-top: 10px;
+}
+
+.fieldset-auto-width {
+  display: inline-block;
+  width: 350px;px;
+}
+
+#fieldset-troops {
+  float: left;
+  margin-left: 10px;
+  background-image:url('light_toast.png');
+}
+
+#fieldset-results {
+  float: right;
+  margin-left: 10px;
+  background-image:url('light_toast.png');
+}
+
+#options-div {
+  text-align: center;
+}
+
+.calc-label {
+  width: 125px;
+  text-align: right;
+}
+
+.align-right {
+  width: 100px;
+  text-align: right;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.na {
+}
+
+.footnote {
+  font-style: italic;
+  font-size: small;
+  text-align: center;
+}

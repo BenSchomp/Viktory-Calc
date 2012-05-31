@@ -1,0 +1,135 @@
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/viktory-calc.css" />
+</head>
+<body>
+
+<div id="wrapper">
+  <h1>Viktory II Combat Calculator</h1>
+  <div id="landbattle">
+    <form action="" id="simform" onsubmit=" return false;">
+      <fieldset class="fieldset-auto-width" id="fieldset-troops">
+        <legend>Land Battle</legend>
+        <table id="troops-table">
+          <thead>
+            <tr>
+              <th />
+              <th>Attacker</th>
+              <th>Defender</th>
+            </tr>
+          </thead>
+          <tr>
+            <td class="calc-label">Infantry:</td>
+            <td><input type="number" id="attacker-infantry" class="align-right dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="defender-infantry" class="align-right dice-modifier defender units" value="0" min="0" max="99" /></td>
+          </tr>
+          <tr>
+            <td class="calc-label">Cavalry:</td>
+            <td><input type="number" id="attacker-cavalry" class="align-right dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="defender-cavalry" class="align-right dice-modifier defender units" value="0" min="0" max="99" /></td>
+          </tr>
+          <tr>
+            <td class="calc-label">Artillery:</td>
+            <td><input type="number" id="attacker-artillery" class="align-right dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="defender-artillery" class="align-right dice-modifier defender units" value="0" min="0" max="99" /></td>
+          </tr>
+          <tr>
+            <td class="calc-label">Terrain:</td>
+            <td class="na"/>
+            <td>
+              <input type="radio" name="terrain" value="plains" class="dice-modifier reset" checked="checked" />Plains<br />
+              <input type="radio" name="terrain" value="grass" class="dice-modifier" />Grass<br />
+              <input type="radio" name="terrain" value="forrest" class="dice-modifier" />Forrest<br />
+              <input type="radio" name="terrain" value="mountain" class="dice-modifier" />Mountain
+            </td>
+          </tr>
+          <tr>
+            <td class="calc-label">Settlements:</td>
+            <td class="na"/>
+            <td>
+              <input type="radio" name="settlement" value="none" class="dice-modifier reset" checked="checked" />None<br />
+              <input type="radio" name="settlement" value="town" class="dice-modifier" />Town<br />
+              <input type="radio" name="settlement" value="city" class="dice-modifier" />City
+            </td>
+          </tr>
+          <tr>
+            <td class="calc-label">Naval Support:</td>
+            <td class="na"/>
+            <td>
+              <input type="checkbox" name="navalsupport" value="navalsupport" id="defender-navalsupport" class="dice-modifier" />Adj Frigate(s)
+            </td>
+          </tr>
+          <tr>
+            <td class="calc-label">Hex Sides:</td>
+            <td><input type="number" id="attacker-sides" class="align-right dice-modifier" value="1" min="1" max="6" /></td>
+            <td class="na" />
+          </tr>
+          <tr>
+            <td class="calc-label">Combat Supply:</td>
+            <td><input type="checkbox" name="combatsupply" value="attackerbonus" id="attacker-bonus" class="dice-modifier" />Bonus</td>
+            <td><input type="checkbox" name="combatsupply" value="defenderbonus" id="defender-bonus" class="dice-modifier" />Bonus</td>
+          </tr>
+          <tr>
+            <td class="calc-label"># Dice:</td>
+            <td id="attacker-dice" class="align-center">0</td>
+            <td id="defender-dice" class="align-center">0</td>
+          </tr>
+        </table>
+      </fieldset>
+    </form>
+  </div>
+
+  <div id="results">
+    <fieldset class="fieldset-auto-width" id="fieldset-results">
+      <legend>Results</legend>
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th />
+            <th>Attacker</th>
+            <th>Defender</th>
+          </tr>
+        </thead>
+        <tr>
+          <td class="calc-label">Win/Hold:</td>
+          <td><input type="text" id="attacker-win-results" class="align-right" disabled="disabled" /></td>
+          <td><input type="text" id="defender-win-results" class="align-right" disabled="disabled" /></td>
+        </tr>
+        <tr>
+          <td class="calc-label">Infantry:</td>
+          <td><input type="text" id="attacker-infantry-results" class="align-right" disabled="disabled" /></td>
+          <td><input type="text" id="defender-infantry-results" class="align-right" disabled="disabled" /></td>
+        </tr>
+        <tr>
+          <td class="calc-label">Cavalry:</td>
+          <td><input type="text" id="attacker-cavalry-results" class="align-right" disabled="disabled" /></td>
+          <td><input type="text" id="defender-cavalry-results" class="align-right" disabled="disabled" /></td>
+        </tr>
+        <tr>
+          <td class="calc-label">Artillery:</td>
+          <td><input type="text" id="attacker-artillery-results" class="align-right" disabled="disabled" /></td>
+          <td><input type="text" id="defender-artillery-results" class="align-right" disabled="disabled" /></td>
+        </tr>
+        <tr>
+          <td class="calc-label"># Rounds:</td>
+          <td colspan="2"><input type="text" id="numRounds-results" class="align-right" disabled="disabled" /></td>
+        </tr>
+      </table>
+      <p class='footnote'>
+        Averages/units remaining after 1,000 simulations.<br />
+        Tie/mutual destruction counts as a 'hold' for the Defender.
+      </p>
+    </fieldset>
+  </div>
+  <div id="misc">
+    <input type="submit" value="Calculate" id="calculatebutton" onclick="runSim()" disabled="disabled" />
+    <input type="submit" value="Reset" id="resetbutton" onclick="reset()" />
+    <input type="submit" value="Swap" id="swapbutton" onclick="swap()" disabled="disabled"/>
+  </div>
+</div>
+
+</body>
+</html>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+<script src="js/viktory-calc.js" type="text/javascript"></script>
