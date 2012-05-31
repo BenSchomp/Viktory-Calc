@@ -81,6 +81,7 @@ function displayWinResults( attackerWins, defenderWins, n )
   $("#attacker-win-results").val( getPercent( attackerWins, n ) );
   $("#defender-win-results").val( getPercent( defenderWins, n ) );
 
+  clearResults();
   if( attackerWins > defenderWins )
   { $("#attacker-win-results").css( 'background', 'lightgreen' ); }
   else if( attackerWins < defenderWins )
@@ -131,14 +132,11 @@ function getDefenderDice( defender, extraHits ) {
   else if( isTown() )
   { numDice_Defense = 1; }
 
-  // terrain defense only exists if defender units exist
-  if( defender.hasUnits() )
-  {
-    if( isMountain() )
-    { numDice_Defense = 2; }
-    else if( isForrest() )
-    { numDice_Defense = Math.max( numDice_Defense, 1 ); }
-  }
+  // terrain defense
+  if( isMountain() )
+  { numDice_Defense = 2; }
+  else if( isForrest() )
+  { numDice_Defense = Math.max( numDice_Defense, 1 ); }
 
   // one or more adjacent frigates add naval support
   if( $("#defender-navalsupport").attr("checked") )
@@ -181,6 +179,14 @@ function runOneSim() {
   var i = 0;
   var roll = 6;
   var numRounds = 0;
+
+  // bombard attacks occur before battle begins
+  for( i = 0; i < $("#attacker-bombards").val(); i++ )
+  {
+    roll = Math.floor((Math.random()*6)+1);
+    if( roll <= attackerHighHit )
+    { defender.eliminateUnit( roll ); }
+  }
 
   // pre-battle artillery combat
   for( i = 0; i < attacker.artillery; i++ )
@@ -261,9 +267,7 @@ function runSim() {
   displayWinResults( attackerWins, defenderWins, n );
   displayUnitResults( "attacker", attackerTotals, n );
   displayUnitResults( "defender", defenderTotals, n );
-
   $("#numRounds-results").val( numRoundsTotal / n );
-
 }
 
 function updateDice() {
@@ -273,7 +277,7 @@ function updateDice() {
       $("#attacker-cavalry").val(),
       $("#attacker-artillery").val()
     ) );
-  $("#attacker-dice").text( attackerDice );
+  $("#attacker-dice").val( attackerDice );
 
   var defenderDice = getDefenderDice(
     new Army(
@@ -281,7 +285,7 @@ function updateDice() {
       $("#defender-cavalry").val(),
       $("#defender-artillery").val()
     ) );
-  $("#defender-dice").text( defenderDice );
+  $("#defender-dice").val( defenderDice );
 
   if( attackerDice > 0 && defenderDice > 0 )
   { $("#calculatebutton").attr( "disabled", false ); }
@@ -301,8 +305,13 @@ function reset() {
   $("#defender-navalsupport,#attacker-bonus,#defender-bonus")
     .attr( "checked", false );
 
+  $("#attacker-bombards").val( 0 );
   $("#attacker-sides").val( 1 );
   $(".reset").attr( "checked", "checked" );
+
+  $(".results").each( function() {
+    this.value = "";
+  } );
 
   clearResults();
   updateDice();

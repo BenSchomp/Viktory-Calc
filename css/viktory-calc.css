@@ -6,25 +6,27 @@ h1 {
   text-align: center;
 }
 
-#wrapper {
+#wrapper-div {
   width: 775px;
+  height: 250px;
+  margin: 0 auto 0 auto;
 }
 
-#landbattle {
+#landbattle-div {
   width: 50%;
   float: left;
 }
 
-#results {
+#results-div {
   width: 50%;
   float: right;
 }
 
-#misc {
- width: 50%;
- float: right;
+#misc-div {
+ width: 100%;
  text-align: center;
- margin-top: 10px;
+ float: left;
+ margin-top: 5px;
 }
 
 .fieldset-auto-width {
@@ -33,19 +35,17 @@ h1 {
 }
 
 #fieldset-troops {
+  height: 100%;
   float: left;
   margin-left: 10px;
   background-image:url('light_toast.png');
 }
 
 #fieldset-results {
+  height: 100%;
   float: right;
   margin-left: 10px;
   background-image:url('light_toast.png');
-}
-
-#options-div {
-  text-align: center;
 }
 
 .calc-label {
