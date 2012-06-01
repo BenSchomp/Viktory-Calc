@@ -5,7 +5,10 @@
 <body>
 
 <div id="wrapper-div">
-  <h1>Viktory II Combat Calculator</h1>
+  <div class="ribbon"><div class="ribbon-stitches-top"></div>
+  <strong class="ribbon-content"><h1>Viktory II<sup>&reg;</sup> Combat Calculator</h1></strong>
+  <div class="ribbon-stitches-bottom"></div></div>
+  <div id="inner-wrapper-div">
   <div id="landbattle-div">
     <form action="" id="simform" onsubmit=" return false;">
       <fieldset class="fieldset-auto-width" id="fieldset-troops">
@@ -20,23 +23,27 @@
           </thead>
           <tr>
             <td class="calc-label">Infantry:</td>
-            <td><input type="number" id="attacker-infantry" class="align-right dice-modifier attacker units" value="0" min="0" max="99" /></td>
-            <td><input type="number" id="defender-infantry" class="align-right dice-modifier defender units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="attacker-infantry" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="defender-infantry" class="align-right col-width dice-modifier defender units" value="0" min="0" max="99" /></td>
           </tr>
           <tr>
             <td class="calc-label">Cavalry:</td>
-            <td><input type="number" id="attacker-cavalry" class="align-right dice-modifier attacker units" value="0" min="0" max="99" /></td>
-            <td><input type="number" id="defender-cavalry" class="align-right dice-modifier defender units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="attacker-cavalry" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="defender-cavalry" class="align-right col-width dice-modifier defender units" value="0" min="0" max="99" /></td>
           </tr>
           <tr>
             <td class="calc-label">Artillery:</td>
-            <td><input type="number" id="attacker-artillery" class="align-right dice-modifier attacker units" value="0" min="0" max="99" /></td>
-            <td><input type="number" id="defender-artillery" class="align-right dice-modifier defender units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="attacker-artillery" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="defender-artillery" class="align-right col-width dice-modifier defender units" value="0" min="0" max="99" /></td>
+          </tr>
+          <tr>
+            <td class="calc-label"></td>
+            <td colspan="2"><input type="checkbox" name="noprebattle" value="yes" id="noprebattle" class="dice-modifier" disabled="disabled"/><span class="footnote">&nbsp;Skip pre-battle Artillery fire</span></td>
           </tr>
           <tr>
             <td class="calc-label">Settlements:</td>
             <td colspan="2" class="align-center">
-              <input type="radio" name="settlement" value="none" class="dice-modifier reset" checked="checked" />None
+              <input type="radio" name="settlement" value="none" class="dice-modifier reset" />None
               <input type="radio" name="settlement" value="town" class="dice-modifier" />Town
               <input type="radio" name="settlement" value="city" class="dice-modifier" />City
             </td>
@@ -44,27 +51,41 @@
           <tr>
             <td class="calc-label">Defensive Terrain:</td>
             <td colspan="2" class="align-center">
-              <input type="radio" name="terrain" value="plains" class="dice-modifier reset" checked="checked" />None
+              <input type="radio" name="terrain" value="plains" class="dice-modifier reset" />None
               <input type="radio" name="terrain" value="forrest" class="dice-modifier" />Forrest
               <input type="radio" name="terrain" value="mountain" class="dice-modifier" />Mountain
             </td>
           </tr>
           <tr>
             <td class="calc-label">Bmbrd Attacks:</td>
-            <td><input type="number" id="attacker-bombards" class="align-right dice-modifier" value="0" min="0" max="99" /></td>
+            <td><input type="number" id="attacker-bombards" class="align-right col-width dice-modifier" value="0" min="0" max="99" /></td>
             <td>
               <input type="checkbox" name="navalsupport" value="navalsupport" id="defender-navalsupport" class="dice-modifier" />Adj Frigate(s)
             </td>
           </tr>
           <tr>
             <td class="calc-label">Attack Sides:</td>
-            <td><input type="number" id="attacker-sides" class="align-right dice-modifier" value="1" min="1" max="6" /></td>
+            <td><input type="number" id="attacker-sides" class="align-right col-width dice-modifier" value="1" min="1" max="6" /></td>
             <td class="na" />
           </tr>
           <tr>
             <td class="calc-label">Combat Supply:</td>
-            <td><input type="checkbox" name="combatsupply" value="attackerbonus" id="attacker-bonus" class="dice-modifier" />Bonus</td>
-            <td><input type="checkbox" name="combatsupply" value="defenderbonus" id="defender-bonus" class="dice-modifier" />Bonus</td>
+            <td>
+              <input type="radio" name="attackercombatsupply" value="yes" class="dice-modifier" />Yes
+              <input type="radio" name="attackercombatsupply" value="no"  class="dice-modifier reset" />No
+            </td>
+            <td>
+              <input type="radio" name="defendercombatsupply" value="yes" class="dice-modifier" />Yes
+              <input type="radio" name="defendercombatsupply" value="no"  class="dice-modifier reset" />No
+            </td>
+          </tr>
+          <tr>
+            <td class="calc-label">Lost Capital:</td>
+            <td class="na"></td>
+            <td>
+              <input type="radio" name="defenderlostcapital" value="yes" class="dice-modifier" />Yes
+              <input type="radio" name="defenderlostcapital" value="no"  class="dice-modifier reset" />No
+            </td>
           </tr>
         </table>
       </fieldset>
@@ -84,8 +105,8 @@
         </thead>
           <tr>
             <td class="calc-label">Combat Dice:</td>
-            <td><input type="text" id="attacker-dice" class="align-right" value="0" disabled="disabled"></td>
-            <td><input type="text" id="defender-dice" class="align-right" value="0" disabled="disabled"></td>
+            <td><input type="text" id="attacker-dice" class="align-right col-width" value="0" disabled="disabled"></td>
+            <td><input type="text" id="defender-dice" class="align-right col-width" value="0" disabled="disabled"></td>
           </tr>
         <tr>
           <td class="calc-label">Win/Hold:</td>
@@ -112,16 +133,21 @@
           <td colspan="2"><input type="text" id="numRounds-results" class="align-right results" disabled="disabled" /></td>
         </tr>
       </table>
-      <p class='footnote'>
-        Averages/units remaining after 1,000 simulations.<br />
-        Tie/mutual destruction counts as a 'hold' for the Defender.
-      </p>
+      <ul class='footnote'>
+        <li>Averages/units remaining after 1,000 simulations.</li>
+        <li>Tie/mutual destruction counts for the Defender.</li>
+        <li>Bmbrd Attacks are adjacent Artillery and/or Frigates.</li>
+        <li>Mid-battle, adj units and 'Skip Artillery fire' to update.</li>
+      </ul>
     </fieldset>
   </div>
   <div id="misc-div">
-    <input type="submit" value="Calculate" id="calculatebutton" onclick="runSim()" disabled="disabled" />
-    <input type="submit" value="  Reset  " id="resetbutton" onclick="reset()" />
-    <!-- <input type="submit" value="Swap" id="swapbutton" onclick="swap()" disabled="disabled"/> -->
+      <input type="submit" value="Calculate" id="calculatebutton" onclick="runSim()" disabled="disabled" />
+      <input type="submit" value="  Clear  " id="resetbutton" onclick="reset()" />
+  </div>
+  <div id="footer-div">
+    <p class="footnote align-right">...brought to you by <a href="http://mygamehistory.com">MyGameHistory.com</a>, &copy;2012</p>
+  </div>
   </div>
 </div>
 

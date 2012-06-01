@@ -59,6 +59,10 @@ function isCity() {
   return ( $('input[name=settlement]:checked', '#simform').val() == 'city' );
 }
 
+function isCapitalLost() {
+  return ( $('input[name=defenderlostcapital]:checked', '#simform').val() == 'yes' );
+}
+
 function isForrest() {
   return ( $('input[name=terrain]:checked', '#simform').val() == 'forrest' );
 }
@@ -69,6 +73,10 @@ function isMountain() {
 
 function isTownOrCity() {
   return isTown() || isCity();
+}
+
+function isNoPreBattle() {
+  return ( $('input[name=noprebattle]:checked', '#simform').val() == 'yes' );
 }
 
 function getPercent( value, n )
@@ -127,7 +135,9 @@ function getDefenderDice( defender, extraHits ) {
   }
 
   // settlement defense
-  if( isCity() ) // && ! isCapitalLost
+  if( isCity() && isCapitalLost() )
+  { numDice_Defense = 1; }
+  else if( isCity() )
   { numDice_Defense = 2; }
   else if( isTown() )
   { numDice_Defense = 1; }
@@ -188,19 +198,25 @@ function runOneSim() {
     { defender.eliminateUnit( roll ); }
   }
 
-  // pre-battle artillery combat
-  for( i = 0; i < attacker.artillery; i++ )
+  // pre-battle artillery fire
+  if( ! isNoPreBattle() )
   {
-    roll = Math.floor((Math.random()*6)+1);
-    if( roll <= attackerHighHit )
-    { defender.eliminateUnit( roll ); }
-  }
+    // store a copy of the defender's pre-attack artillery count
+    var defenderArtilleryCopy = defender.artillery;
 
-  for( i = 0; i < defender.artillery; i++ )
-  {
-    roll = Math.floor((Math.random()*6)+1);
-    if( roll <= defenderHighHit )
-    { attacker.eliminateUnit( roll ); }
+    for( i = 0; i < attacker.artillery; i++ )
+    {
+      roll = Math.floor((Math.random()*6)+1);
+      if( roll <= attackerHighHit )
+      { defender.eliminateUnit( roll ); }
+    }
+
+    for( i = 0; i < defenderArtilleryCopy; i++ )
+    {
+      roll = Math.floor((Math.random()*6)+1);
+      if( roll <= defenderHighHit )
+      { attacker.eliminateUnit( roll ); }
+    }
   }
 
   // now only do battle if the attacker has units and/or the
@@ -209,7 +225,7 @@ function runOneSim() {
   {
     do
     {
-      // keep a copy of the defender to calculate defenderDice later
+      // store a copy of the defender's pre-attack unit counts
       var defenderCopy = new Army( defender.infantry, defender.cavalry, defender.artillery );
 
       // roll for attacker
@@ -291,6 +307,11 @@ function updateDice() {
   { $("#calculatebutton").attr( "disabled", false ); }
   else
   { $("#calculatebutton").attr( "disabled", "disabled" ); }
+
+  if( $("#attacker-artillery").val() > 0 || $("#defender-artillery").val() > 0 )
+  { $("#noprebattle").attr( "disabled", false ); }
+  else
+  { $("#noprebattle").attr( "disabled", "disabled" ); }
 }
 
 function clearResults() {
@@ -302,7 +323,7 @@ function reset() {
     this.value = "0";
   } );
 
-  $("#defender-navalsupport,#attacker-bonus,#defender-bonus")
+  $("#defender-navalsupport,#noprebattle")
     .attr( "checked", false );
 
   $("#attacker-bombards").val( 0 );
@@ -322,5 +343,6 @@ $(document).ready( function () {
     clearResults();
     updateDice();
   } );
+  reset();
 } );
 
