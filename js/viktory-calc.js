@@ -63,8 +63,8 @@ function isCapitalLost() {
   return ( $('input[name=defenderlostcapital]:checked', '#simform').val() == 'yes' );
 }
 
-function isForrest() {
-  return ( $('input[name=terrain]:checked', '#simform').val() == 'forrest' );
+function isForest() {
+  return ( $('input[name=terrain]:checked', '#simform').val() == 'forest' );
 }
 
 function isMountain() {
@@ -116,7 +116,15 @@ function getAttackerDice( attacker ) {
 
   // each add'l hex side gets a die roll
   if( numDice )
-  { numDice += $("#attacker-sides").val() - 1; }
+  {
+    // can't have more sides than total troops
+    // TODO: update form field max value
+    var attackSides =
+      Math.min(
+        $("#attacker-sides").val(),
+        parseInt(attacker.infantry) + parseInt(attacker.cavalry) + parseInt(attacker.artillery) );
+    numDice += attackSides - 1;
+  }
 
   return numDice;
 }
@@ -145,7 +153,7 @@ function getDefenderDice( defender, extraHits ) {
   // terrain defense
   if( isMountain() )
   { numDice_Defense = 2; }
-  else if( isForrest() )
+  else if( isForest() )
   { numDice_Defense = Math.max( numDice_Defense, 1 ); }
 
   // one or more adjacent frigates add naval support
@@ -179,11 +187,11 @@ function runOneSim() {
   );
 
   var attackerHighHit = 3;
-  if( $("#attacker-bonus").attr("checked") )
+  if( $('input:radio[name=attackercombatsupply]:checked').val() == "yes" )
   { attackerHighHit++; }
 
   var defenderHighHit = 3;
-  if( $("#defender-bonus").attr("checked") )
+  if( $('input:radio[name=defendercombatsupply]:checked').val() == "yes" )
   { defenderHighHit++; }
 
   var i = 0;
