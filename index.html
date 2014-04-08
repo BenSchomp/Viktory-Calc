@@ -37,26 +37,6 @@
             <td><input type="number" id="defender-artillery" class="align-right col-width dice-modifier defender units" value="0" min="0" max="99" /></td>
           </tr>
           <tr>
-            <td class="calc-label"></td>
-            <td colspan="2"><input type="checkbox" name="noprebattle" value="yes" id="noprebattle" class="dice-modifier" disabled="disabled"/><span class="footnote">&nbsp;Skip pre-battle Artillery fire</span></td>
-          </tr>
-          <tr>
-            <td class="calc-label">Settlements:</td>
-            <td colspan="2" class="align-center">
-              <input type="radio" name="settlement" value="none" class="dice-modifier reset" />None
-              <input type="radio" name="settlement" value="town" class="dice-modifier" />Town
-              <input type="radio" name="settlement" value="city" class="dice-modifier" />City
-            </td>
-          </tr>
-          <tr>
-            <td class="calc-label">Defensive Terrain:</td>
-            <td colspan="2" class="align-center">
-              <input type="radio" name="terrain" value="plains" class="dice-modifier reset" />None
-              <input type="radio" name="terrain" value="forest" class="dice-modifier" />Forest
-              <input type="radio" name="terrain" value="mountain" class="dice-modifier" />Mountain
-            </td>
-          </tr>
-          <tr>
             <td class="calc-label">Bmbrd Attacks:</td>
             <td><input type="number" id="attacker-bombards" class="align-right col-width dice-modifier" value="0" min="0" max="99" /></td>
             <td>
@@ -87,6 +67,30 @@
               <input type="radio" name="defenderlostcapital" value="no"  class="dice-modifier reset" />No
             </td>
           </tr>
+          <tr>
+            <td class="calc-label">Pre-Battle Artillery:</td>
+            <td>
+              <input type="radio" name="noprebattle" value="yes" class="dice-modifier reset" />Yes
+              <input type="radio" name="noprebattle" value="no"  class="dice-modifier" />No
+            </td>
+            <td class="na"></td>
+          </tr>
+          <tr>
+            <td class="calc-label">Defensive Terrain:</td>
+            <td colspan="2" class="align-center">
+              <input type="radio" name="terrain" value="plains" class="dice-modifier reset" />None
+              <input type="radio" name="terrain" value="forest" class="dice-modifier" />Forest
+              <input type="radio" name="terrain" value="mountain" class="dice-modifier" />Mountain
+            </td>
+          </tr>
+          <tr>
+            <td class="calc-label">Settlements:</td>
+            <td colspan="2" class="align-center">
+              <input type="radio" name="settlement" value="none" class="dice-modifier reset" />None
+              <input type="radio" name="settlement" value="town" class="dice-modifier" />Town
+              <input type="radio" name="settlement" value="city" class="dice-modifier" />City
+            </td>
+          </tr>
         </table>
       </fieldset>
     </form>
@@ -114,7 +118,12 @@
           <td><input type="text" id="defender-win-results" class="align-right results" disabled="disabled" /></td>
         </tr>
         <tr>
-          <td class="calc-label">Infantry:</td>
+          <td class="calc-label">Mutual Destruction:</td>
+          <td></td>
+          <td><input type="text" id="ties-results" class="align-right results" disabled="disabled" /></td>
+        </tr>
+        <tr>
+          <td class="calc-label">Remaining Infantry:</td>
           <td><input type="text" id="attacker-infantry-results" class="align-right results" disabled="disabled" /></td>
           <td><input type="text" id="defender-infantry-results" class="align-right results" disabled="disabled" /></td>
         </tr>
@@ -135,9 +144,8 @@
       </table>
       <ul class='footnote'>
         <li>Averages/units remaining after 1,000 simulations.</li>
-        <li>Tie/mutual destruction counts for the Defender.</li>
         <li>Bmbrd Attacks are adjacent Artillery and/or Frigates.</li>
-        <li>Mid-battle, adj units and 'Skip Artillery fire' to update.</li>
+        <li>Mid-battle, adjust units and set No Pre-Battle Artillery to update.</li>
       </ul>
     </fieldset>
   </div>
@@ -145,8 +153,11 @@
       <input type="submit" value="Calculate" id="calculatebutton" onclick="runSim()" disabled="disabled" />
       <input type="submit" value="  Clear  " id="resetbutton" onclick="reset()" />
   </div>
-  <div id="footer-div">
-    <p class="footnote align-right"><a href="#">Link to this Battle</a></p>
+  <div class="float-left">
+    <span class="footnote"><a href="mailto://ben@benschomp.com">&copy; 2014 Ben Schomp</a></span>
+  </div>
+  <div class="float-right">
+    <span class="footnote"><a href="http://www.viktorygame.com">VIKTORY II</a></span>
   </div>
   </div>
 </div>
@@ -156,3 +167,15 @@
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 <script src="js/viktory-calc.js" type="text/javascript"></script>
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-23205418-1']);
+  _gaq.push(['_setDomainName', 'benschomp.com']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>

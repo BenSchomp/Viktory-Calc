@@ -76,7 +76,7 @@ function isTownOrCity() {
 }
 
 function isNoPreBattle() {
-  return ( $('input[name=noprebattle]:checked', '#simform').val() == 'yes' );
+  return ( $('input[name=noprebattle]:checked', '#simform').val() == 'no' );
 }
 
 function getPercent( value, n )
@@ -84,16 +84,21 @@ function getPercent( value, n )
   return ( ( value / n ) * 100 ).toFixed( 2 ) + "%"; 
 }
 
-function displayWinResults( attackerWins, defenderWins, n )
+function displayWinResults( attackerWins, defenderWins, ties, n )
 {
   $("#attacker-win-results").val( getPercent( attackerWins, n ) );
   $("#defender-win-results").val( getPercent( defenderWins, n ) );
+  $("#ties-results").val( getPercent( ties, n ) );
 
   clearResults();
-  if( attackerWins > defenderWins )
+
+  // 35 wins out of 1000 or 3.5%
+  if( attackerWins > defenderWins + 35 && attackerWins > ties + 35 )
   { $("#attacker-win-results").css( 'background', 'lightgreen' ); }
-  else if( attackerWins < defenderWins )
+  else if( defenderWins > attackerWins + 35 && defenderWins > ties + 35 )
   { $("#defender-win-results").css( 'background', 'lightgreen' ); }
+  else if( ties > attackerWins + 35 && ties > defenderWins + 35 )
+  { $("#ties-results").css( 'background', 'lightgreen' ); }
 }
 
 function displayUnitResults( label, totals, n )
@@ -271,6 +276,7 @@ function runSim() {
   var numRoundsTotal = 0;
   var attackerWins = 0;
   var defenderWins = 0;
+  var ties = 0;
 
   //var n = $("input[name=numsimiterations]:checked", "#optionsform").val();
   var n = 1000;
@@ -282,13 +288,15 @@ function runSim() {
     defenderTotals.add( results.defender );
     if( results.attacker.hasUnits() )
     { attackerWins++; }
-    else
+    else if( results.defender.hasUnits() )
     { defenderWins++; }
+    else
+    { ties++; }
 
     numRoundsTotal += results.numRounds;
   }
 
-  displayWinResults( attackerWins, defenderWins, n );
+  displayWinResults( attackerWins, defenderWins, ties, n );
   displayUnitResults( "attacker", attackerTotals, n );
   displayUnitResults( "defender", defenderTotals, n );
   $("#numRounds-results").val( numRoundsTotal / n );
