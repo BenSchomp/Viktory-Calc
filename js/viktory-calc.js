@@ -92,12 +92,11 @@ function displayWinResults( attackerWins, defenderWins, ties, n )
 
   clearResults();
 
-  // 35 wins out of 1000 or 3.5%
-  if( attackerWins > defenderWins + 35 && attackerWins > ties + 35 )
+  if( attackerWins > defenderWins && attackerWins > ties )
   { $("#attacker-win-results").css( 'background', 'lightgreen' ); }
-  else if( defenderWins > attackerWins + 35 && defenderWins > ties + 35 )
+  else if( defenderWins > attackerWins && defenderWins > ties )
   { $("#defender-win-results").css( 'background', 'lightgreen' ); }
-  else if( ties > attackerWins + 35 && ties > defenderWins + 35 )
+  else if( ties > attackerWins && ties > defenderWins )
   { $("#ties-results").css( 'background', 'lightgreen' ); }
 }
 
