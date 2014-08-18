@@ -92,12 +92,33 @@ function displayWinResults( attackerWins, defenderWins, ties, n )
 
   clearResults();
 
-  if( attackerWins > defenderWins && attackerWins > ties )
+  var ff = 100; // fudge factor: only mark green if difference is > 10%
+
+  if( attackerWins > ( defenderWins + ff ) && attackerWins > ( ties + ff )  )
   { $("#attacker-win-results").css( 'background', 'lightgreen' ); }
-  else if( defenderWins > attackerWins && defenderWins > ties )
+  else if( defenderWins > ( attackerWins + ff ) && defenderWins > ( ties + ff ) )
   { $("#defender-win-results").css( 'background', 'lightgreen' ); }
-  else if( ties > attackerWins && ties > defenderWins )
+  else if( ties > ( attackerWins + ff ) && ties > ( defenderWins + ff ) )
   { $("#ties-results").css( 'background', 'lightgreen' ); }
+  else
+  {
+    // no clear winner, mark the too-close-to-call in yellow
+    if( Math.abs( attackerWins - defenderWins ) < ff )
+    {
+      $("#attacker-win-results").css( 'background', 'khaki' );
+      $("#defender-win-results").css( 'background', 'khaki' );
+    }
+    if( Math.abs( attackerWins - ties ) < ff )
+    {
+      $("#attacker-win-results").css( 'background', 'khaki' );
+      $("#ties-results").css( 'background', 'khaki' );
+    }
+    if( Math.abs( ties - defenderWins ) < ff )
+    {
+      $("#ties-results").css( 'background', 'khaki' );
+      $("#defender-win-results").css( 'background', 'khaki' );
+    }
+  }
 }
 
 function displayUnitResults( label, totals, n )
