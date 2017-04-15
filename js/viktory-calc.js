@@ -300,7 +300,6 @@ function runSim() {
   var defenderWins = 0;
   var ties = 0;
 
-  //var n = $("input[name=numsimiterations]:checked", "#optionsform").val();
   var n = 1000;
   var i = 0;
   for( i = 0; i < n; i++ )
@@ -352,17 +351,13 @@ function updateDice() {
 
   var sides = $("#attacker-sides").val();
   var numAttackers = attackers.numUnits();
-  var maxAttackers = Math.max( numAttackers, 1 );
-  $("#attacker-sides").attr('max', Math.min(maxAttackers, 6));
+  var maxSides = Math.max( numAttackers, 1 );
+  $("#attacker-sides").attr('max', Math.min(maxSides, 6));
 
-  if( sides > maxAttackers ) {
+  if( sides > maxSides ) {
     $("#attacker-sides").css( 'background', 'yellow' );
-    $("#attacker-sides").animate({
-      backgroundColor: '#ffffff'
-  }, 2500 );
-    $("#attacker-sides").val( maxAttackers );
-  } else {
-    $("#attacker-sides").css( 'background', "" );
+    $("#attacker-sides").animate( {backgroundColor: ''}, 2500 );
+    $("#attacker-sides").val( maxSides );
   }
 }
 
