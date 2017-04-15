@@ -4,10 +4,12 @@ function Army( infantry, cavalry, artillery )
   this.cavalry = cavalry || 0;
   this.artillery = artillery || 0;
 
+  this.numUnits = function() {
+    return parseInt(this.infantry) + parseInt(this.cavalry) + parseInt(this.artillery);
+  };
+
   this.hasUnits = function() {
-    return this.infantry > 0 ||
-           this.cavalry > 0 ||
-           this.artillery > 0;
+    return this.numUnits() > 0;
   };
 
   this.text = function( label ) {
@@ -323,12 +325,11 @@ function runSim() {
 }
 
 function updateDice() {
-  var attackerDice = getAttackerDice(
-    new Army(
+  var attackers = new Army(
       $("#attacker-infantry").val(),
       $("#attacker-cavalry").val(),
-      $("#attacker-artillery").val()
-    ) );
+      $("#attacker-artillery").val() );
+  var attackerDice = getAttackerDice( attackers );
   $("#attacker-dice").val( attackerDice );
 
   var defenderDice = getDefenderDice(
@@ -348,6 +349,21 @@ function updateDice() {
   { $("#noprebattle").attr( "disabled", false ); }
   else
   { $("#noprebattle").attr( "disabled", "disabled" ); }
+
+  var sides = $("#attacker-sides").val();
+  var numAttackers = attackers.numUnits();
+  var maxAttackers = Math.max( numAttackers, 1 );
+  $("#attacker-sides").attr('max', Math.min(maxAttackers, 6));
+
+  if( sides > maxAttackers ) {
+    $("#attacker-sides").css( 'background', 'yellow' );
+    $("#attacker-sides").animate({
+      backgroundColor: '#ffffff'
+  }, 2500 );
+    $("#attacker-sides").val( maxAttackers );
+  } else {
+    $("#attacker-sides").css( 'background', "" );
+  }
 }
 
 function clearResults() {
