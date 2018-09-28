@@ -1,12 +1,85 @@
 body {
-  background-image:url('micro_carbon.png');
+  /*background-image:url('micro_carbon.png');*/
 }
 
 h1 {
   text-align: center;
 }
 
+#main-div {
+  position: absolute;
+}
+
+#background {
+  position: absolute;
+  width: 800px;
+  height: 834px;
+  background-image:url('i/hex-bg.png');
+}
+
+.army {
+  border-style: solid;
+  border-width: 1px;
+  border-color: red;
+
+  width: 310px;
+  height: 270px;
+  position: absolute;
+}
+
+#defender {
+  left: 245px;
+  top: 280px;
+}
+
+#attacker-1 {
+  left: 245px;
+  top: 5px;
+}
+
+#attacker-2 {
+  left: 485px;
+  top: 145px;
+}
+
+#attacker-3 {
+  left: 485px;
+  top: 420px;
+}
+
+#attacker-4 {
+  left: 245px;
+  top: 555px;
+}
+
+#attacker-5 {
+  left: 5px;
+  top: 420px;
+}
+
+#attacker-6 {
+  left: 5px;
+  top: 145px;
+}
+
+.troops {
+  position: absolute;
+  top: 75px;
+
+  border-style: solid;
+  border-width: 1px;
+  border-color: blue;
+}
+
+
+
+
+
+
+
+
 #wrapper-div {
+  visibility: hidden;
   width: 775px;
   height: 460px;
   margin: 25px auto 0 auto;
