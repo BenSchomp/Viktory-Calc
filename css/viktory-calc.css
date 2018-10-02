@@ -19,7 +19,7 @@ h1 {
 
 .army {
   border-style: solid;
-  border-width: 1px;
+  border-width: 0px;
   border-color: red;
 
   width: 310px;
@@ -29,7 +29,7 @@ h1 {
 
 #defender {
   left: 245px;
-  top: 280px;
+  top: 250px;
 }
 
 #attacker-1 {
@@ -67,7 +67,7 @@ h1 {
   top: 75px;
 
   border-style: solid;
-  border-width: 1px;
+  border-width: 0px;
   border-color: blue;
 }
 

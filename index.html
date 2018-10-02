@@ -19,25 +19,7 @@
   <br/>
   <div id="main-div">
     <div id="background">
-
-      <div id="defender" class="army">
-        <div class="troops">
-          <table>
-            <tr>
-              <td class="calc-label">Infantry:</td>
-              <td><input type="number" id="defender-infantry" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
-            </tr>
-            <tr>
-              <td class="calc-label">Cavalry:</td>
-              <td><input type="number" id="defender-cavalry" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
-            </tr>
-            <tr>
-              <td class="calc-label">Artillery:</td>
-              <td><input type="number" id="defender-artillery" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
-            </tr>
-          </table>
-        </div>
-      </div>
+      <form action="" id="simform" onsubmit="return false;">
 
       <div id="attacker-1" class="army">
         <div class="troops">
@@ -148,19 +130,51 @@
         </div>
       </div>
 
+      <div id="defender" class="army">
+        <div class="troops">
+          <table>
+            <tr>
+              <td class="calc-label">Infantry:</td>
+              <td><input type="number" id="defender-infantry" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            </tr>
+            <tr>
+              <td class="calc-label">Cavalry:</td>
+              <td><input type="number" id="defender-cavalry" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            </tr>
+            <tr>
+              <td class="calc-label">Artillery:</td>
+              <td><input type="number" id="defender-artillery" class="align-right col-width dice-modifier attacker units" value="0" min="0" max="99" /></td>
+            </tr>
+          <tr>
+          <tr>
+            <td class="calc-label">Hex Terrain:</td>
+            <td colspan="2" class="align-center">
+              <input type="radio" name="terrain" value="plains" class="dice-modifier reset" />None
+              <input type="radio" name="terrain" value="forest" class="dice-modifier" />Forest
+              <input type="radio" name="terrain" value="mountain" class="dice-modifier" />Mtn.
+            </td>
+          </tr>
+          <tr>
+            <td class="calc-label">Settlement:</td>
+            <td colspan="2" class="align-center">
+              <input type="radio" name="settlement" value="none" class="dice-modifier reset" />None
+              <input type="radio" name="settlement" value="town" class="dice-modifier" />Town
+              <input type="radio" name="settlement" value="city" class="dice-modifier" />City
+            </td>
+          </tr> 
+          </table>
+        </div>
+      </div>
+
+    </form>
+
 
       <div id="misc-div">
         <input type="submit" value="Calculate" id="calculatebutton" onclick="runSim();" disabled="disabled" />
         <input type="submit" value="  Clear  " id="resetbutton" onclick="reset();"/>
       </div>
-      <div class="float-left">
-        <span class="footnote"><a href="mailto://ben@benschomp.com">&copy; 2017 Ben Schomp</a></span>
-      </div>
-      <div class="float-right">
-        <span class="footnote"><a href="http://www.viktorygame.com">VIKTORY II</a></span>
-      </div>
-    </div>
 
+    </div>
 
       <div id="results-div">
         <fieldset class="fieldset-auto-width" id="fieldset-results">
@@ -239,9 +253,6 @@
           </ul>
         </fieldset>
       </div>
-
-
-  </div>
 
 </body>
 
