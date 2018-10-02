@@ -146,10 +146,12 @@ function getAttackerDice( attacker ) {
   {
     // can't have more sides than total troops
     // TODO: update form field max value
-    var attackSides =
+    var attackSides = 1;
+    /*
       Math.min(
         $("#attacker-sides").val(),
         parseInt(attacker.infantry) + parseInt(attacker.cavalry) + parseInt(attacker.artillery) );
+        */
     numDice += attackSides - 1;
   }
 
@@ -203,9 +205,9 @@ function getDefenderDice( defender, extraHits ) {
 
 function runOneSim() {
   var attacker = new Army(
-    $("#attacker-infantry").val(),
-    $("#attacker-cavalry").val(),
-    $("#attacker-artillery").val()
+    $("#attacker-infantry-1").val(),
+    $("#attacker-cavalry-1").val(),
+    $("#attacker-artillery-1").val()
   );
   var defender = new Army(
     $("#defender-infantry").val(),
@@ -226,7 +228,8 @@ function runOneSim() {
   var numRounds = 0;
 
   // bombard attacks occur before battle begins
-  for( i = 0; i < $("#attacker-bombards").val(); i++ )
+  var bombardAttacks = 0; // $("#attacker-bombards").val();
+  for( i = 0; i < bombardAttacks; i++ )
   {
     roll = Math.floor((Math.random()*6)+1);
     if( roll <= attackerHighHit )
@@ -293,6 +296,7 @@ function runOneSim() {
 }
 
 function runSim() {
+  console.log('runSim()');
   var attackerTotals = new Army();
   var defenderTotals = new Army();
   var numRoundsTotal = 0;
@@ -325,9 +329,9 @@ function runSim() {
 
 function updateDice() {
   var attackers = new Army(
-      $("#attacker-infantry").val(),
-      $("#attacker-cavalry").val(),
-      $("#attacker-artillery").val() );
+      $("#attacker-infantry-1").val(),
+      $("#attacker-cavalry-1").val(),
+      $("#attacker-artillery-1").val() );
   var attackerDice = getAttackerDice( attackers );
   $("#attacker-dice").val( attackerDice );
 
@@ -366,6 +370,7 @@ function clearResults() {
 }
 
 function reset() {
+  console.log('reset()');
   $(".units").each( function() {
     this.value = "0";
   } );
