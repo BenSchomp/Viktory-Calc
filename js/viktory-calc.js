@@ -186,7 +186,7 @@ function getDefenderDice( defender, extraHits ) {
   { numDice_Defense = Math.max( numDice_Defense, 1 ); }
 
   // one or more adjacent frigates add naval support
-  if( $("#defender-navalsupport").attr("checked") )
+  if( $("#defender-navalsupport").prop("checked") )
   { numDice_Defense++; }
 
   // defender suppression: extra attacker hits reduce defensive return fire
@@ -228,7 +228,7 @@ function runOneSim() {
   var numRounds = 0;
 
   // bombard attacks occur before battle begins
-  var bombardAttacks = 0; // $("#attacker-bombards").val();
+  var bombardAttacks = $("#attacker-bombards-1").val();
   for( i = 0; i < bombardAttacks; i++ )
   {
     roll = Math.floor((Math.random()*6)+1);
@@ -327,6 +327,25 @@ function runSim() {
   $("#numRounds-results").val( numRoundsTotal / n );
 }
 
+function updateHexes() {
+  $('.attacker.hex').each( function() {
+    var hasUnits = false;
+    $(this).find('.units').each( function() {
+      //console.log( $(this).val() );
+      if( parseInt( $(this).val() ) > 0 ) {
+        hasUnits = true;
+        return false;
+      }
+    } );
+    if( hasUnits ) {
+      $(this).css( 'border-width', '1px' );
+    }
+    else {
+      $(this).css( 'border-width', '0px' );
+    }
+  } );
+}
+
 function updateDice() {
   var attackers = new Army(
       $("#attacker-infantry-1").val(),
@@ -393,6 +412,7 @@ function reset() {
 $(document).ready( function () {
   $('.dice-modifier').bind( 'change', function() {
     clearResults();
+    updateHexes();
     updateDice();
   } );
   reset();
