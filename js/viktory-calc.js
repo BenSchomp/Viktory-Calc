@@ -77,6 +77,10 @@ function isTownOrCity() {
   return isTown() || isCity();
 }
 
+function hasNavalSupport() {
+  return ( $('input[name=navalsupport]:checked', '#simform').val() == 'yes' );
+}
+
 function isNoPreBattle() {
   return ( $('input[name=noprebattle]:checked', '#simform').val() == 'no' );
 }
@@ -186,7 +190,7 @@ function getDefenderDice( defender, extraHits ) {
   { numDice_Defense = Math.max( numDice_Defense, 1 ); }
 
   // one or more adjacent frigates add naval support
-  if( $("#defender-navalsupport").prop("checked") )
+  if( hasNavalSupport() )
   { numDice_Defense++; }
 
   // defender suppression: extra attacker hits reduce defensive return fire
@@ -328,27 +332,7 @@ function runSim() {
 }
 
 function update() {
-  /*
-  var sides = 0;
-  $('.attacker.hex').each( function() {
-    var hasUnits = false;
-    $(this).find('.units').each( function() {
-      if( parseInt( $(this).val() ) > 0 ) {
-        hasUnits = true;
-        return false;
-      }
-    } );
-    if( hasUnits ) {
-      sides += 1;
-      $(this).find('.side-dot').css( 'visibility', 'visible' );
-    }
-    else {
-      $(this).find('.side-dot').css( 'visibility', 'hidden' );
-    }
-  } );
-  */
-
-  var sides = 0;
+  var attackSides = 0;
   var attackers = new Army();
 
   for(var i=1; i<7; i++) {
@@ -358,7 +342,7 @@ function update() {
       $("#attacker-artillery-"+i).val() );
 
     if(cur.hasUnits()) {
-      sides += 1;
+      attackSides += 1;
       $("#side-"+i).css('visibility', 'visible');
     } else {
       $("#side-"+i).css('visibility', 'hidden');
@@ -367,7 +351,7 @@ function update() {
     attackers.add(cur);
   }
 
-  var attackerDice = getAttackerDice(attackers) + Math.max(sides-1, 0);
+  var attackerDice = getAttackerDice(attackers) + Math.max(attackSides-1, 0);
   $("#attacker-dice").val( attackerDice );
 
   var defenderDice = getDefenderDice(
@@ -383,6 +367,7 @@ function update() {
   else
   { $("#calculatebutton").attr( "disabled", "disabled" ); }
 
+  // TODO
   if( $("#attacker-artillery").val() > 0 || $("#defender-artillery").val() > 0 )
   { $("#noprebattle").attr( "disabled", false ); }
   else
@@ -395,17 +380,11 @@ function clearResults() {
 }
 
 function reset() {
-  console.log('reset()');
-  $(".units").each( function() {
+  $(".reset-zero").each( function() {
     this.value = "0";
   } );
 
-  $("#defender-navalsupport,#noprebattle")
-    .attr( "checked", false );
-
-  $("#attacker-bombards").val( 0 );
-  $("#attacker-sides").val( 1 );
-  $(".reset").attr( "checked", "checked" );
+  $(".reset").prop( "checked", true );
 
   $(".results").each( function() {
     this.value = "";
@@ -416,6 +395,11 @@ function reset() {
 }
 
 $(document).ready( function () {
+  console.log("TODO:");
+  console.log("  * runSim() to consider armies from all hexes");
+  console.log("  * runSim() to eliminate units based on their attack side affecting attack dice count");
+  console.log("  * pre-battle arty");
+  console.log("  * combat supply & lost capital");
   $('.dice-modifier').bind( 'change', function() {
     clearResults();
     update();
