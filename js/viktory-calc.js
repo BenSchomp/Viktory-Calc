@@ -338,10 +338,10 @@ function updateHexes() {
       }
     } );
     if( hasUnits ) {
-      $(this).css( 'border-width', '1px' );
+      $(this).find('.side-dot').css( 'visibility', 'visible' );
     }
     else {
-      $(this).css( 'border-width', '0px' );
+      $(this).find('.side-dot').css( 'visibility', 'hidden' );
     }
   } );
 }

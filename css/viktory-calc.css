@@ -17,6 +17,44 @@ h1 {
   background-image:url('i/hex-bg.png');
 }
 
+.side-dot {
+  visibility: hidden;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-image:url('i/circle-red.png');
+}
+
+#attack-side-1 {
+  left: 148px;
+  top: 264px;
+}
+
+#attack-side-2 {
+  left: 23px;
+  top: 192px;
+}
+
+#attack-side-3 {
+  left: 23px;
+  top: 58px;
+}
+
+#attack-side-4 {
+  left: 148px;
+  top: -10px;
+}
+
+#attack-side-5 {
+  left: 267px;
+  top: 58px;
+}
+
+#attack-side-6 {
+  left: 267px;
+  top: 192px;
+}
+
 .army {
   border-style: solid;
   border-width: 0px;
