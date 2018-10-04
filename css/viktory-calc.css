@@ -25,32 +25,32 @@ h1 {
   background-image:url('i/circle-red.png');
 }
 
-#attack-side-1 {
+#side-1 {
   left: 148px;
   top: 264px;
 }
 
-#attack-side-2 {
+#side-2 {
   left: 23px;
   top: 192px;
 }
 
-#attack-side-3 {
+#side-3 {
   left: 23px;
   top: 58px;
 }
 
-#attack-side-4 {
+#side-4 {
   left: 148px;
-  top: -10px;
+ top: -10px;
 }
 
-#attack-side-5 {
+#side-5 {
   left: 267px;
   top: 58px;
 }
 
-#attack-side-6 {
+#side-6 {
   left: 267px;
   top: 192px;
 }

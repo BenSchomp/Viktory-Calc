@@ -327,31 +327,47 @@ function runSim() {
   $("#numRounds-results").val( numRoundsTotal / n );
 }
 
-function updateHexes() {
+function update() {
+  /*
+  var sides = 0;
   $('.attacker.hex').each( function() {
     var hasUnits = false;
     $(this).find('.units').each( function() {
-      //console.log( $(this).val() );
       if( parseInt( $(this).val() ) > 0 ) {
         hasUnits = true;
         return false;
       }
     } );
     if( hasUnits ) {
+      sides += 1;
       $(this).find('.side-dot').css( 'visibility', 'visible' );
     }
     else {
       $(this).find('.side-dot').css( 'visibility', 'hidden' );
     }
   } );
-}
+  */
 
-function updateDice() {
-  var attackers = new Army(
-      $("#attacker-infantry-1").val(),
-      $("#attacker-cavalry-1").val(),
-      $("#attacker-artillery-1").val() );
-  var attackerDice = getAttackerDice( attackers );
+  var sides = 0;
+  var attackers = new Army();
+
+  for(var i=1; i<7; i++) {
+    var cur = new Army(
+      $("#attacker-infantry-"+i).val(),
+      $("#attacker-cavalry-"+i).val(),
+      $("#attacker-artillery-"+i).val() );
+
+    if(cur.hasUnits()) {
+      sides += 1;
+      $("#side-"+i).css('visibility', 'visible');
+    } else {
+      $("#side-"+i).css('visibility', 'hidden');
+    }
+
+    attackers.add(cur);
+  }
+
+  var attackerDice = getAttackerDice(attackers) + Math.max(sides-1, 0);
   $("#attacker-dice").val( attackerDice );
 
   var defenderDice = getDefenderDice(
@@ -372,16 +388,6 @@ function updateDice() {
   else
   { $("#noprebattle").attr( "disabled", "disabled" ); }
 
-  var sides = $("#attacker-sides").val();
-  var numAttackers = attackers.numUnits();
-  var maxSides = Math.max( numAttackers, 1 );
-  $("#attacker-sides").attr('max', Math.min(maxSides, 6));
-
-  if( sides > maxSides ) {
-    $("#attacker-sides").css( 'background', 'yellow' );
-    $("#attacker-sides").animate( {backgroundColor: ''}, 2500 );
-    $("#attacker-sides").val( maxSides );
-  }
 }
 
 function clearResults() {
@@ -406,14 +412,13 @@ function reset() {
   } );
 
   clearResults();
-  updateDice();
+  update();
 }
 
 $(document).ready( function () {
   $('.dice-modifier').bind( 'change', function() {
     clearResults();
-    updateHexes();
-    updateDice();
+    update();
   } );
   reset();
 } );
