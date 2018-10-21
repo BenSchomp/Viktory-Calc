@@ -9,6 +9,7 @@
 <body>
   <br/>
   <div id="main-div">
+    <div id="logo-div">Viktory Calc v2.0</div>
     <div id="hexes">
       <form action="" id="simform" onsubmit="return false;">
         <div id="attacker-1" class="attacker army hex">
@@ -390,13 +391,13 @@
         <br />
         <div>
           <label class="mod-label align-right">Include Pre-Battle Artillery Fire?</label>
-          <input type="radio" name="noprebattle" value="no" class="mod-label dice-modifier" />
+          <input type="radio" name="noprebattle" value="no" class="mod-label dice-modifier noprebattle" />
           <label class="mod-label">No</label>
-          <input type="radio" name="noprebattle" value="yes" class="mod-label dice-modifier reset" />
+          <input type="radio" name="noprebattle" value="yes" class="mod-label dice-modifier noprebattle reset" />
           <label class="mod-label">Yes</label>
         </div>
         <br />
-        <div>
+        <div id="button-div">
           <input type="submit" value="Calculate" id="calculatebutton" onclick="runSim();" disabled="disabled" />
           <input type="submit" value="  Clear  " id="resetbutton" onclick="reset();" />
         </div>

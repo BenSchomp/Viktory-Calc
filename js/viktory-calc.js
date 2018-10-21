@@ -1,11 +1,55 @@
+var INF = 0;
+var CAV = 1;
+var ART = 2;
+
+function Division( armies ) {
+  console.log( "Division()" );
+  var n = armies.length;
+  this.armies = [];
+  this.pool = new Army();
+  this.division_text = '';
+
+  for (var i = 0; i < n; i++) {
+    var cur = armies[i];
+    var num_units = cur.numUnits();
+    
+    if( num_units == 0 ) {
+      continue;
+    } else if( num_units == 1 ) {
+      cur.handleSingle();
+
+    } else {
+      console.log( '>1 units' );
+    }
+
+    this.division_text += cur.text( String(i + 1) + ':' ) + ' (' + cur.elimWeights() + ')\n';
+    this.armies.push( cur );
+    this.pool.add( cur );
+  }
+
+  this.text = function() {
+    return this.division_text;
+  };
+
+  console.log( this.text() );
+  console.log( '---------' );
+  console.log( this.pool.text( 'pool:' ) );
+}
+
 function Army( infantry, cavalry, artillery )
 {
-  this.infantry = infantry || 0;
-  this.cavalry = cavalry || 0;
-  this.artillery = artillery || 0;
+
+  this.troops = [ parseInt(infantry) || 0,
+                  parseInt(cavalry) || 0,
+                  parseInt(artillery) || 0 ];
+
+  this.elim_weights = [ 0, 0, 0 ]; 
+  this.elimWeights = function() {
+    return this.elim_weights;
+  }
 
   this.numUnits = function() {
-    return parseInt(this.infantry) + parseInt(this.cavalry) + parseInt(this.artillery);
+    return this.troops[INF] + this.troops[CAV] + this.troops[ART];
   };
 
   this.hasUnits = function() {
@@ -13,14 +57,28 @@ function Army( infantry, cavalry, artillery )
   };
 
   this.text = function( label ) {
-    return this.infantry + " / " + this.cavalry + " / " + this.artillery;
+    return label + ' ' + this.troops[INF] + " / " + this.troops[CAV] + " / " + this.troops[ART];
   };
 
   this.add = function( rhs ) {
-    this.infantry += parseInt( rhs.infantry );
-    this.cavalry += parseInt( rhs.cavalry );
-    this.artillery += parseInt( rhs.artillery );
+    for( var i=0; i<3; i++ ) {
+      this.troops[i] += rhs.troops[i];
+    }
   };
+
+  this.handleSingle = function() {
+    if( this.numUnits > 1 ) {
+      return;
+    }
+
+    // reverse, in order of value (ART, CAV, INF)
+    for( var i=3; i>=0; i-- ) {
+      if( this.troops[i] == 1 ) {
+        this.elim_weights[i] += 1;
+      }
+    }
+
+  }
 
   this.eliminateUnit = function( dieRoll ) {
     if( typeof dieRoll === 'number' && dieRoll == 1 )
@@ -51,6 +109,13 @@ function Army( infantry, cavalry, artillery )
     return true;
   };
 
+  this.getAttackDice = function() {
+    return 1; 
+  }
+
+  this.getDefendDice = function() {
+    return 1; 
+  }
 }
 
 function isTown() {
@@ -135,11 +200,12 @@ function displayUnitResults( label, totals, n )
 }
 
 function getAttackerDice( attacker ) {
+  console.log( "getAttackerDice:", attacker, attacker.troops );
   var numDice = 0;
 
   // each type of unit gets a die roll
   var unit;
-  for( unit in attacker )
+  for( unit in attacker.troops )
   {
     if( attacker[unit] > 0 )
     { numDice++; }
@@ -159,17 +225,19 @@ function getAttackerDice( attacker ) {
     numDice += attackSides - 1;
   }
 
+  console.log( numDice );
   return numDice;
 }
 
 function getDefenderDice( defender, extraHits ) {
+  console.log( "getDefenderDice:", defender, extraHits );
   var numDice = 0;
   var numDice_Units = 0;
   var numDice_Defense = 0;
 
   // each type of unit gets a die roll
   var unit;
-  for( unit in defender )
+  for( unit in defender.troops )
   {
     if( defender[unit] > 0 )
     { numDice_Units++; }
@@ -204,6 +272,7 @@ function getDefenderDice( defender, extraHits ) {
   else
   { numDice = numDice_Units + numDice_Defense; }
 
+  console.log( numDice );
   return numDice;
 }
 
@@ -272,7 +341,7 @@ function runOneSim() {
 
       // roll for attacker
       var attackerExtraHits = 0;
-      var attackerNumDice = getAttackerDice( attacker );
+      var attackerNumDice = attacker.getAttackDice();
       for( i = 0; i < attackerNumDice; i++ )
       {
         roll = Math.floor((Math.random()*6)+1);
@@ -284,7 +353,7 @@ function runOneSim() {
       }
 
       // roll for defender
-      var defenderNumDice = getDefenderDice( defenderCopy, attackerExtraHits );
+      var defenderNumDice = defenderCopy.getDefendDice( attackerExtraHits );
       for( i = 0; i < defenderNumDice; i++ )
       {
         roll = Math.floor((Math.random()*6)+1);
@@ -332,6 +401,7 @@ function runSim() {
 }
 
 function update() {
+  console.log( "update()" );
   var attackSides = 0;
   var attackers = new Army();
 
@@ -351,15 +421,17 @@ function update() {
     attackers.add(cur);
   }
 
-  var attackerDice = getAttackerDice(attackers) + Math.max(attackSides-1, 0);
+  var attackerDice = attackers.getAttackDice() + Math.max(attackSides-1, 0);
   $("#attacker-dice").val( attackerDice );
 
-  var defenderDice = getDefenderDice(
+  var defender =
     new Army(
       $("#defender-infantry").val(),
       $("#defender-cavalry").val(),
       $("#defender-artillery").val()
-    ) );
+    );
+
+  var defenderDice = defender.getDefendDice();
   $("#defender-dice").val( defenderDice );
 
   if( attackerDice > 0 && defenderDice > 0 )
@@ -369,9 +441,9 @@ function update() {
 
   // TODO
   if( $("#attacker-artillery").val() > 0 || $("#defender-artillery").val() > 0 )
-  { $("#noprebattle").attr( "disabled", false ); }
+  { $(".noprebattle").attr( "disabled", false ); }
   else
-  { $("#noprebattle").attr( "disabled", "disabled" ); }
+  { $(".noprebattle").attr( "disabled", "disabled" ); }
 
 }
 
@@ -398,12 +470,14 @@ $(document).ready( function () {
   console.log("TODO:");
   console.log("  * runSim() to consider armies from all hexes");
   console.log("  * runSim() to eliminate units based on their attack side affecting attack dice count");
-  console.log("  * pre-battle arty");
-  console.log("  * combat supply & lost capital");
   $('.dice-modifier').bind( 'change', function() {
     clearResults();
     update();
   } );
   reset();
+
+  /* *** */
+  var armies = [new Army(1,2,3), new Army(1,0,0), new Army(0,0,1)];
+  Division( armies );
 } );
 

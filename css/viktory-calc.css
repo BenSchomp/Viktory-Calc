@@ -123,12 +123,20 @@ h1 {
 
 #results-div {
   position: absolute;
-  width: 100%;
   top: 750px;
+  left: 420px;
   float: left;
 }
 
+#logo-div {
+  position: absolute;
+  left: 25px;
+  top: 25px;
+}
 
+#button-div {
+  z-index: 99;
+}
 
 /* -------- */
 
