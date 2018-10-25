@@ -3,37 +3,115 @@ var CAV = 1;
 var ART = 2;
 
 function Division( armies ) {
-  console.log( "Division()" );
-  var n = armies.length;
+  var num_armies = armies.length;
   this.armies = [];
   this.pool = new Army();
-  this.division_text = '';
 
-  for (var i = 0; i < n; i++) {
-    var cur = armies[i];
+  this.text = function() {
+    var division_text = '';
+    for( var i=0; i < this.armies.length; i++ ) {
+      cur = this.armies[i];
+      division_text += cur.text( String(i) + ':' ) + cur.elim_text() + '\n';
+    }
+    return division_text;
+  };
+
+  this.eliminateUnits = function( dieRoll ) {
+  }
+
+  // calculate elimination weights for each army
+  for (var a=0; a<num_armies; a++) {
+    var cur = armies[a];
     var num_units = cur.numUnits();
-    
+
     if( num_units == 0 ) {
       continue;
-    } else if( num_units == 1 ) {
-      cur.handleSingle();
 
     } else {
-      console.log( '>1 units' );
+      for( var t=0; t<3; t++ ) {
+        if( cur.troops[t] == 0 ) {
+          continue;
+        }
+
+        cur.elim_weights[t] += (t*0.1) // this weights ART > CAV > INF
+
+        if( cur.troops[t] == 1 ) {
+          cur.elim_weights[t] += 1;
+          if( num_units == 1 ) {
+            cur.elim_weights[t] += 1;
+          }
+        }
+      }
     }
 
-    this.division_text += cur.text( String(i + 1) + ':' ) + ' (' + cur.elimWeights() + ')\n';
     this.armies.push( cur );
     this.pool.add( cur );
   }
 
-  this.text = function() {
-    return this.division_text;
-  };
+  // caclulate elimination weights for entire pool, target troop type w/ least units
+  var pool_min = 999;
+  for( var t=0; t<3; t++ ) {
+    var cur = this.pool.troops[t];
+    if( cur > 0 && cur < pool_min ) {
+      pool_min = cur;
+    }
+  }
+
+  var army_min = 999;
+  var army_min_target = -1;
+  if( pool_min > 0 ) {
+    var weight_inc = 1;
+    if( pool_min == 1 ) {
+      weight_inc += 1;
+    }
+
+    for( var t=0; t<3; t++ ) {
+      if( this.pool.troops[t] == pool_min ) {
+        for( var a=0; a<num_armies; a++ ) {
+          var cur = this.armies[a];
+          if( cur.troops[t] > 0 ) {
+            cur.elim_weights[t] += weight_inc;
+
+            if( cur.numUnits() < army_min ) {
+              army_min = cur.numUnits();
+              army_min_target = a;
+            }
+          }
+        }
+      }
+    }
+
+    var elim_max = -1;
+    var elim_army_target = -1;
+    var elim_troop_target = -1;
+    for( var a=0; a<num_armies; a++ ) {
+      for( var t=0; t<3; t++ ) {
+        var cur = this.armies[a];
+        if( cur.troops[t] > 0 && a == army_min_target ) {
+          cur.elim_weights[t] += 0.05;
+        }
+
+        if( cur.elim_weights[t] > elim_max ) {
+          elim_max = cur.elim_weights[t];
+          elim_army_target = a;
+          elim_troop_target = t;
+        }
+      }
+    }
+
+  /* TODO ... don't forget that you might choose differently if you get >1 hits
+       ie 1 / 1 / 3 ... if you've got 3 hits, the current algorithm will choose:
+         1 cav, then 1 inf, then 1 art ... resulting in: 0 / 0 / 2
+         is that better than eliminating 3 art, result:  1 / 1 / 3 ?
+  */
+
+  }
+
 
   console.log( this.text() );
   console.log( '---------' );
-  console.log( this.pool.text( 'pool:' ) );
+  console.log( this.pool.text( 'D:' ) + ' ... target: [ ' + elim_army_target + ', ' + elim_troop_target + ' ] ');
+  console.log( '\n' );
 }
 
 function Army( infantry, cavalry, artillery )
@@ -43,10 +121,7 @@ function Army( infantry, cavalry, artillery )
                   parseInt(cavalry) || 0,
                   parseInt(artillery) || 0 ];
 
-  this.elim_weights = [ 0, 0, 0 ]; 
-  this.elimWeights = function() {
-    return this.elim_weights;
-  }
+  this.elim_weights = [ 0.0, 0.0, 0.0 ]; 
 
   this.numUnits = function() {
     return this.troops[INF] + this.troops[CAV] + this.troops[ART];
@@ -56,8 +131,14 @@ function Army( infantry, cavalry, artillery )
     return this.numUnits() > 0;
   };
 
-  this.text = function( label ) {
+  this.text = function( label='' ) {
     return label + ' ' + this.troops[INF] + " / " + this.troops[CAV] + " / " + this.troops[ART];
+  };
+
+  this.elim_text = function( label='' ) {
+    return label + ' ( ' + this.elim_weights[0].toFixed(2) + ' / '
+                         + this.elim_weights[1].toFixed(2) + ' / '
+                         + this.elim_weights[2].toFixed(2) + ' )';
   };
 
   this.add = function( rhs ) {
@@ -66,18 +147,23 @@ function Army( infantry, cavalry, artillery )
     }
   };
 
-  this.handleSingle = function() {
-    if( this.numUnits > 1 ) {
-      return;
-    }
-
-    // reverse, in order of value (ART, CAV, INF)
-    for( var i=3; i>=0; i-- ) {
+  this.elimCalc = function() {
+    var num_units = this.numUnits();
+    for( var i=0; i<3; i++ ) {
       if( this.troops[i] == 1 ) {
         this.elim_weights[i] += 1;
+        if( num_units == 1 ) {
+          this.elim_weights[i] += 1;
+        }
       }
     }
 
+  }
+
+  this.eliminateUnits = function( infantry, cavalry, artillery ) {
+    this.infantry -= infantry;
+    this.cavalry -= cavalry;
+    this.artillery -= artillery;
   }
 
   this.eliminateUnit = function( dieRoll ) {
@@ -401,7 +487,6 @@ function runSim() {
 }
 
 function update() {
-  console.log( "update()" );
   var attackSides = 0;
   var attackers = new Army();
 
@@ -467,9 +552,6 @@ function reset() {
 }
 
 $(document).ready( function () {
-  console.log("TODO:");
-  console.log("  * runSim() to consider armies from all hexes");
-  console.log("  * runSim() to eliminate units based on their attack side affecting attack dice count");
   $('.dice-modifier').bind( 'change', function() {
     clearResults();
     update();
@@ -477,7 +559,29 @@ $(document).ready( function () {
   reset();
 
   /* *** */
-  var armies = [new Army(1,2,3), new Army(1,0,0), new Army(0,0,1)];
+  var armies = [new Army(2,3,1), new Army(1,1,1), new Army(0,1,1)];
+  Division( armies );
+  var armies = [new Army(1,3,0), new Army(0,1,0), new Army(0,1,1)];
+  Division( armies );
+  var armies = [new Army(1,3,3), new Army(0,1,0)];
+  Division( armies );
+  var armies = [new Army(0,3,3), new Army(0,1,0)];
+  Division( armies );
+  var armies = [new Army(1,3,3)];
+  Division( armies );
+  var armies = [new Army(0,3,2)];
+  Division( armies );
+  var armies = [new Army(1,3,1)];
+  Division( armies );
+  var armies = [new Army(2,0,2)];
+  Division( armies );
+  var armies = [new Army(1,1,1), new Army(0,1,1)];
+  Division( armies );
+  var armies = [new Army(0,3,1), new Army(0,1,0)];
+  Division( armies );
+  var armies = [new Army(0,2,0), new Army(0,5,0)];
+  Division( armies );
+  var armies = [new Army(0,2,0), new Army(0,2,0)];
   Division( armies );
 } );
 
