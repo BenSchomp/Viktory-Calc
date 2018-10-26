@@ -3,9 +3,14 @@ var CAV = 1;
 var ART = 2;
 
 function Division( armies ) {
-  var num_armies = armies.length;
   this.armies = [];
   this.pool = new Army();
+
+  for( var a=0; a<armies.length; a++ ) {
+    var cur = armies[a];
+    this.armies.push( cur );
+    this.pool.add( cur );
+  }
 
   this.text = function() {
     var division_text = '';
@@ -20,150 +25,151 @@ function Division( armies ) {
     console.log( '   0   1   2' );
     console.log( this.text() );
     console.log( ' + ---------' );
-    console.log( this.pool.text( '  ' ) + ' ... min: [ ' + elim_min_target[0] + ', ' + elim_min_target[1] + ' ]');
-    console.log( '                 max: [ ' + elim_max_target[0] + ', ' + elim_max_target[1] + ' ]')
+    console.log( this.pool.text( '  ' ) );
+    //console.log( this.pool.text( '  ' ) + ' ... min: [ ' + elim_min_target[0] + ', ' + elim_min_target[1] + ' ]');
+    //console.log( '                 max: [ ' + elim_max_target[0] + ', ' + elim_max_target[1] + ' ]')
     console.log( '\n' );
   };
 
   this.eliminateUnits = function( dieRoll ) {
-    if( typeof dieRoll === 'number' && dieRoll == 1 ) {
-      this.armies[ elim_max[0] ].eliminateUnit( elim_max[1] );
-    } else {
-      this.armies[ elim_min[0] ].eliminateUnit( elim_min[1] );
-    }
-  }
+    var num_armies = this.armies.length;
+    // --- calculate elimination weights for each army ---
+    for (var a=0; a<num_armies; a++) {
+      var cur = this.armies[a];
+      var num_units = cur.numUnits();
 
-  // --- calculate elimination weights for each army ---
-  for (var a=0; a<num_armies; a++) {
-    var cur = armies[a];
-    var num_units = cur.numUnits();
+      if( num_units == 0 ) {
+        continue;
 
-    // can't eliminate from empty armies
-    if( num_units == 0 ) {
-      continue;
+      } else {
+        for( var t=0; t<3; t++ ) {
+          if( cur.troops[t] == 0 ) {
+            continue;
+          }
 
-    } else {
-      for( var t=0; t<3; t++ ) {
-        // can't eliminate from empty troops
-        if( cur.troops[t] == 0 ) {
-          continue;
-        }
+         // 2nd bit is to weigh ART > CAV > INF 
+          cur.elim_weights[t] += (t*0.1)
 
-       // 2nd bit is to weigh ART > CAV > INF 
-        cur.elim_weights[t] += (t*0.1)
-
-        // singles are valuable - eliminate first if possible
-        if( cur.troops[t] == 1 ) {
-          cur.elim_weights[t] += 1;
-          if( num_units == 1 ) {
+          // singles are valuable - eliminate first if possible
+          if( cur.troops[t] == 1 ) {
             cur.elim_weights[t] += 1;
+            if( num_units == 1 ) {
+              cur.elim_weights[t] += 1.5;
+            }
           }
         }
       }
     }
 
-    this.armies.push( cur );
-    this.pool.add( cur );
-  }
-
-  // sort armies by num_units to break weight ties (try to get rid of
-  //  smaller armies first in hopes you can eliminate it sooner)
-  this.armies.sort( function(x, y) {
-    var x_key = x.numUnits();
-    var y_key = y.numUnits();
-    if( x_key > y_key ) {
-      return -1;
-    } else if( x_key < y_key ) {
-      return 1;
-    }
-    return 0;
-  });
-
-  // --- caclulate elimination weights for entire pool, target troop type w/ least units ---
-
-  // which troop type has the least number of units in the force pool?
-  // pool_min: how many units are there of that least troop type?
-  var pool_min = 999;
-  var pool_max = 0;
-  for( var t=0; t<3; t++ ) {
-    var cur_troop_count = this.pool.troops[t];
-
-    // we only care about non-zero counts (can't eliminate 0 troops)
-    if( cur_troop_count > 0 ) {
-      // set the min and max
-      if( cur_troop_count < pool_min ) {
-        pool_min = cur_troop_count;
+    // sort armies by num_units to break weight ties (try to get rid of
+    //  smaller armies first in hopes you can eliminate it sooner)
+    this.armies.sort( function(x, y) {
+      var x_key = x.numUnits();
+      var y_key = y.numUnits();
+      if( x_key > y_key ) {
+        return -1;
+      } else if( x_key < y_key ) {
+        return 1;
       }
-      if( cur_troop_count > pool_max ) {
-        pool_max = cur_troop_count;
+      return 0;
+    });
+
+    // --- caclulate elimination weights for entire pool, target troop type w/ least units ---
+
+    // which troop type has the least number of units in the force pool?
+    // pool_min: how many units are there of that least troop type?
+    var pool_min = 999;
+    var pool_max = 0;
+    for( var t=0; t<3; t++ ) {
+      var cur_troop_count = this.pool.troops[t];
+
+      // we only care about non-zero counts (can't eliminate 0 troops)
+      if( cur_troop_count > 0 ) {
+        // set the min and max
+        if( cur_troop_count < pool_min ) {
+          pool_min = cur_troop_count;
+        }
+        if( cur_troop_count > pool_max ) {
+          pool_max = cur_troop_count;
+        }
       }
     }
-  }
 
-  if( pool_min < 1 ) {
-    return;
-  }
+    if( pool_min < 1 ) {
+      return;
+    }
 
-  for( var t=0; t<3; t++ ) {
+    for( var t=0; t<3; t++ ) {
+      for( var a=0; a<num_armies; a++ ) {
+        var cur = this.armies[a];
+
+        if( cur.troops[t] > 0 ) {
+          // all troops get weighted by their row order (breaks ties)
+          cur.elim_weights[t] += (a*0.001);
+
+          // each troop of the current type gets weighed lowest to highest
+          if( this.pool.troops[t] == pool_min ) { // lowest type
+            cur.elim_weights[t] += 1;
+
+            // if pool_min is 1, it will eliminate an entire troop type from the pool
+            if( pool_min == 1 ) {
+              cur.elim_weights[t] += 1;
+            }
+
+          } else if( this.pool.troops[t] == pool_max ) {
+            cur.elim_weights[t] += 0; // largest type; do nothing
+
+          } else {
+            cur.elim_weights[t] += 0.5; // middle type
+          }
+
+        }
+      }
+    }
+
+    this.debug();
+
+    // for each non-zero weight, find the min and max, and store their location
+    var elim_min = 999;
+    var elim_min_target = [ NaN, NaN ];
+    var elim_max = 0;
+    var elim_max_target = [ NaN, NaN ];
+
+    // elim_max_target is the most valuable target
+    // elim_min_target is the least valuable target
     for( var a=0; a<num_armies; a++ ) {
       var cur = this.armies[a];
-
-      // can't eliminate from nothing ...
-      if( cur.troops[t] > 0 ) {
-        // all troops get weighted by their row order (breaks ties)
-        cur.elim_weights[t] += (a*0.001);
-
-        // each troop of the current type gets weighed lowest to highest
-        if( this.pool.troops[t] == pool_min ) { // lowest type
-          cur.elim_weights[t] += 1;
-
-          // if pool_min is 1, it will eliminate an entire troop type from the pool
-          if( pool_min == 1 ) {
-            cur.elim_weights[t] += 1;
+      for( var t=0; t<3; t++ ) {
+        if( cur.elim_weights[t] > 0 ) {
+          if( cur.elim_weights[t] > elim_max ) {
+            elim_max = cur.elim_weights[t];
+            elim_max_target = [ a, t ];
           }
-
-        } else if( this.pool.troops[t] == pool_max ) {
-          cur.elim_weights[t] += 0; // largest type; do nothing
-
-        } else {
-          cur.elim_weights[t] += 0.5; // middle type
-        }
-
-      }
-    }
-  }
-
-  // for each non-zero weight, find the min and max, and store their location
-  var elim_min = 999;
-  var elim_min_target = [ NaN, NaN ];
-  var elim_max = 0;
-  var elim_max_target = [ NaN, NaN ];
-
-  // elim_max_target is the most valuable target
-  // elim_min_target is the least valuable target
-  for( var a=0; a<num_armies; a++ ) {
-    var cur = this.armies[a];
-    for( var t=0; t<3; t++ ) {
-      if( cur.elim_weights[t] > 0 ) {
-        if( cur.elim_weights[t] > elim_max ) {
-          elim_max = cur.elim_weights[t];
-          elim_max_target = [ a, t ];
-        }
-        if( cur.elim_weights[t] < elim_min ) {
-          elim_min = cur.elim_weights[t];
-          elim_min_target = [ a, t ];
+          if( cur.elim_weights[t] < elim_min ) {
+            elim_min = cur.elim_weights[t];
+            elim_min_target = [ a, t ];
+          }
         }
       }
+      cur.elim_weights = [ 0, 0, 0 ];
     }
+
+    /* TODO ... don't forget that you might choose differently if you get >1 hits
+         ie 1 / 1 / 3 ... if you've got 3 hits, the current algorithm will choose:
+           1 cav, then 1 inf, then 1 art ... resulting in: 0 / 0 / 2
+           is that better than eliminating 3 art, result:  1 / 1 / 3 ?
+    */
+
+    if( typeof dieRoll === 'number' && dieRoll == 1 ) {
+      this.armies[ elim_max_target[0] ].eliminateUnit( elim_max_target[1] );
+      this.pool.eliminateUnit( elim_max_target[1] );
+    } else {
+      this.armies[ elim_min_target[0] ].eliminateUnit( elim_min_target[1] );
+      this.pool.eliminateUnit( elim_min_target[1] );
+    }
+
+    //this.debug();
   }
-
-  /* TODO ... don't forget that you might choose differently if you get >1 hits
-       ie 1 / 1 / 3 ... if you've got 3 hits, the current algorithm will choose:
-         1 cav, then 1 inf, then 1 art ... resulting in: 0 / 0 / 2
-         is that better than eliminating 3 art, result:  1 / 1 / 3 ?
-  */
-
-  this.debug();
 }
 
 function Army( infantry, cavalry, artillery )
@@ -173,7 +179,7 @@ function Army( infantry, cavalry, artillery )
                   parseInt(cavalry) || 0,
                   parseInt(artillery) || 0 ];
 
-  this.elim_weights = [ 0.0, 0.0, 0.0 ]; 
+  this.elim_weights = [ 0, 0, 0 ]; 
 
   this.numUnits = function() {
     return this.troops[INF] + this.troops[CAV] + this.troops[ART];
@@ -571,7 +577,12 @@ $(document).ready( function () {
 
   /* *** */
   var armies = [new Army(2,3,1), new Army(1,1,1), new Army(0,1,1)];
-  Division( armies );
+  var d = new Division( armies );
+  while( d.pool.numUnits() > 0 ) {
+    d.eliminateUnits( 1 );
+  } 
+
+  /*
   var armies = [new Army(1,3,0), new Army(0,1,0), new Army(0,1,1)];
   Division( armies );
   var armies = [new Army(1,3,3), new Army(0,1,0)];
@@ -586,7 +597,7 @@ $(document).ready( function () {
   Division( armies );
   var armies = [new Army(2,0,2)];
   Division( armies );
-  /*var armies = [new Army(1,1,1), new Army(0,1,1)];
+  var armies = [new Army(1,1,1), new Army(0,1,1)];
   Division( armies );
   var armies = [new Army(0,3,1), new Army(0,1,0)];
   Division( armies );
