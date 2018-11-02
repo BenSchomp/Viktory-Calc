@@ -31,8 +31,21 @@ function Division( armies ) {
     console.log( '\n' );
   };
 
+  /*
+    TODO: there is some inefficiency here - since this is called 1000 times,
+           the initial elim_weights values only need to be calculated once.
+           If it is instead a member variable and calculated on instantiation
+           it would reduce iteration within the eliminateUnits() call.
+           However, since each of the 1000 outer calls will result in a different
+           and random path towards one force pool being eliminated, there will
+           be many different calculations along the way.
+           Instead, should implement a hash function and stand up a redis instance
+           for n-time lookups. However this is not a requirement for a functioning
+           system, but a nice-to-have geek out.
+  */
   this.eliminateUnits = function( dieRoll ) {
     var num_armies = this.armies.length;
+
     // --- calculate elimination weights for each army ---
     for (var a=0; a<num_armies; a++) {
       var cur = this.armies[a];
@@ -47,14 +60,17 @@ function Division( armies ) {
             continue;
           }
 
-         // 2nd bit is to weigh ART > CAV > INF 
+          // 2nd bit is to weigh ART > CAV > INF
           cur.elim_weights[t] += (t*0.1)
 
           // singles are valuable - eliminate first if possible
           if( cur.troops[t] == 1 ) {
             cur.elim_weights[t] += 1;
+
+            // if its the only single, its very valuable
             if( num_units == 1 ) {
               cur.elim_weights[t] += 1.5;
+              break; // only 1 unit, go to next army
             }
           }
         }
@@ -575,36 +591,14 @@ $(document).ready( function () {
   } );
   reset();
 
-  /* *** */
+  /* ***
+    test driver
+  */
   var armies = [new Army(2,3,1), new Army(1,1,1), new Army(0,1,1)];
   var d = new Division( armies );
   while( d.pool.numUnits() > 0 ) {
     d.eliminateUnits( 1 );
   } 
 
-  /*
-  var armies = [new Army(1,3,0), new Army(0,1,0), new Army(0,1,1)];
-  Division( armies );
-  var armies = [new Army(1,3,3), new Army(0,1,0)];
-  Division( armies );
-  var armies = [new Army(0,1,3), new Army(0,1,1), new Army(1, 1, 1), new Army(1, 1, 0)];
-  Division( armies );
-  var armies = [new Army(1,3,3)];
-  Division( armies );
-  var armies = [new Army(0,3,2)];
-  Division( armies );
-  var armies = [new Army(1,3,1)];
-  Division( armies );
-  var armies = [new Army(2,0,2)];
-  Division( armies );
-  var armies = [new Army(1,1,1), new Army(0,1,1)];
-  Division( armies );
-  var armies = [new Army(0,3,1), new Army(0,1,0)];
-  Division( armies );
-  var armies = [new Army(0,2,0), new Army(0,5,0)];
-  Division( armies );
-  var armies = [new Army(0,2,0), new Army(0,2,0)];
-  Division( armies );
-  */
 } );
 
