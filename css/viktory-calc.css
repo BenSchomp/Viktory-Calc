@@ -17,7 +17,7 @@ h1 {
   position: absolute;
   width: 800px;
   height: 900px;
-  background-image:url('i/hex-bg.png');
+  background-image:url('hex-bg.png');
   background-repeat: no-repeat;
 }
 
@@ -26,7 +26,7 @@ h1 {
   position: absolute;
   width: 20px;
   height: 20px;
-  background-image:url('i/circle-red.png');
+  background-image:url('circle-red.png');
 }
 
 #side-1 {
@@ -139,10 +139,6 @@ h1 {
 }
 
 /* -------- */
-
-
-
-
 
 #wrapper-div {
   visibility: hidden;
