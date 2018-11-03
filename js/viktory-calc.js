@@ -8,8 +8,10 @@ function Division( armies ) {
 
   for( var a=0; a<armies.length; a++ ) {
     var cur = armies[a];
-    this.armies.push( cur );
-    this.pool.add( cur );
+    if( cur.numUnits() > 0 ) {
+      this.armies.push( cur );
+      this.pool.add( cur );
+    }
   }
 
   this.text = function() {
@@ -30,6 +32,12 @@ function Division( armies ) {
     //console.log( '                 max: [ ' + elim_max_target[0] + ', ' + elim_max_target[1] + ' ]')
     console.log( '\n' );
   };
+
+  this.getAttackerDice = function() {
+    var numDice = this.pool.getCombatDice();
+    numDice += this.armies.length - 1;
+    return Math.max( numDice, 0 );
+  }
 
   /*
     TODO: there is some inefficiency here - since this is called 1000 times,
@@ -228,13 +236,58 @@ function Army( infantry, cavalry, artillery )
     }
   };
 
-  this.getAttackDice = function() {
-    return 1; 
+  this.getCombatDice = function() {
+    var numDice = 0;
+
+    // each type of unit gets a die roll
+    var unit;
+    for( unit in this.troops )
+    {
+      if( this.troops[unit] > 0 )
+      { numDice++; }
+    }
+
+    return numDice;
   }
 
-  this.getDefendDice = function() {
-    return 1; 
+  this.getDefenderDice = function( extraHits ) {
+    // defenderDice = army's combat dice + hex bonus
+    var numDice = 0;
+    var numDice_Units = this.getCombatDice();
+    var numDice_Defense = 0;
+
+    // settlement defense
+    if( isCity() && isCapitalLost() )
+    { numDice_Defense = 1; }
+    else if( isCity() )
+    { numDice_Defense = 2; }
+    else if( isTown() )
+    { numDice_Defense = 1; }
+
+    // terrain defense
+    if( isMountain() )
+    { numDice_Defense = 2; }
+    else if( isForest() )
+    { numDice_Defense = Math.max( numDice_Defense, 1 ); }
+
+    // one or more adjacent frigates add naval support
+    if( hasNavalSupport() )
+    { numDice_Defense++; }
+
+    // defender suppression: extra attacker hits reduce defensive return fire
+    if( typeof extraHits === 'number' )
+    {
+      if( isTownOrCity() )
+      { numDice = Math.max( numDice_Units - extraHits, 0 ) + numDice_Defense; }
+      else
+      { numDice = Math.max( numDice_Units + numDice_Defense - extraHits, 0 ); }
+    }
+    else
+    { numDice = numDice_Units + numDice_Defense; }
+
+    return numDice;
   }
+
 }
 
 function isTown() {
@@ -318,82 +371,6 @@ function displayUnitResults( label, totals, n )
   $("#" + label + "-artillery-results").val( totals.artillery / n );
 }
 
-function getAttackerDice( attacker ) {
-  console.log( "getAttackerDice:", attacker, attacker.troops );
-  var numDice = 0;
-
-  // each type of unit gets a die roll
-  var unit;
-  for( unit in attacker.troops )
-  {
-    if( attacker[unit] > 0 )
-    { numDice++; }
-  }
-
-  // each add'l hex side gets a die roll
-  if( numDice )
-  {
-    // can't have more sides than total troops
-    // TODO: update form field max value
-    var attackSides = 1;
-    /*
-      Math.min(
-        $("#attacker-sides").val(),
-        parseInt(attacker.infantry) + parseInt(attacker.cavalry) + parseInt(attacker.artillery) );
-        */
-    numDice += attackSides - 1;
-  }
-
-  console.log( numDice );
-  return numDice;
-}
-
-function getDefenderDice( defender, extraHits ) {
-  console.log( "getDefenderDice:", defender, extraHits );
-  var numDice = 0;
-  var numDice_Units = 0;
-  var numDice_Defense = 0;
-
-  // each type of unit gets a die roll
-  var unit;
-  for( unit in defender.troops )
-  {
-    if( defender[unit] > 0 )
-    { numDice_Units++; }
-  }
-
-  // settlement defense
-  if( isCity() && isCapitalLost() )
-  { numDice_Defense = 1; }
-  else if( isCity() )
-  { numDice_Defense = 2; }
-  else if( isTown() )
-  { numDice_Defense = 1; }
-
-  // terrain defense
-  if( isMountain() )
-  { numDice_Defense = 2; }
-  else if( isForest() )
-  { numDice_Defense = Math.max( numDice_Defense, 1 ); }
-
-  // one or more adjacent frigates add naval support
-  if( hasNavalSupport() )
-  { numDice_Defense++; }
-
-  // defender suppression: extra attacker hits reduce defensive return fire
-  if( typeof extraHits === 'number' )
-  {
-    if( isTownOrCity() )
-    { numDice = Math.max( numDice_Units - extraHits, 0 ) + numDice_Defense; }
-    else
-    { numDice = Math.max( numDice_Units + numDice_Defense - extraHits, 0 ); }
-  }
-  else
-  { numDice = numDice_Units + numDice_Defense; }
-
-  console.log( numDice );
-  return numDice;
-}
 
 function runOneSim() {
   var attacker = new Army(
@@ -460,7 +437,7 @@ function runOneSim() {
 
       // roll for attacker
       var attackerExtraHits = 0;
-      var attackerNumDice = attacker.getAttackDice();
+      var attackerNumDice = attacker.getAttackerDice(); // *** TODO ... attacker needs to be a Division
       for( i = 0; i < attackerNumDice; i++ )
       {
         roll = Math.floor((Math.random()*6)+1);
@@ -472,7 +449,7 @@ function runOneSim() {
       }
 
       // roll for defender
-      var defenderNumDice = defenderCopy.getDefendDice( attackerExtraHits );
+      var defenderNumDice = defenderCopy.getDefenderDice( attackerExtraHits );
       for( i = 0; i < defenderNumDice; i++ )
       {
         roll = Math.floor((Math.random()*6)+1);
@@ -520,8 +497,8 @@ function runSim() {
 }
 
 function update() {
-  var attackSides = 0;
-  var attackers = new Army();
+  console.log( 'update()' );
+  var armies = [];
 
   for(var i=1; i<7; i++) {
     var cur = new Army(
@@ -530,16 +507,16 @@ function update() {
       $("#attacker-artillery-"+i).val() );
 
     if(cur.hasUnits()) {
-      attackSides += 1;
       $("#side-"+i).css('visibility', 'visible');
     } else {
       $("#side-"+i).css('visibility', 'hidden');
     }
 
-    attackers.add(cur);
+    armies.push(cur);
   }
 
-  var attackerDice = attackers.getAttackDice() + Math.max(attackSides-1, 0);
+  var attacker = new Division( armies );
+  var attackerDice = attacker.getAttackerDice();
   $("#attacker-dice").val( attackerDice );
 
   var defender =
@@ -549,7 +526,7 @@ function update() {
       $("#defender-artillery").val()
     );
 
-  var defenderDice = defender.getDefendDice();
+  var defenderDice = defender.getDefenderDice();
   $("#defender-dice").val( defenderDice );
 
   if( attackerDice > 0 && defenderDice > 0 )
@@ -593,12 +570,12 @@ $(document).ready( function () {
 
   /* ***
     test driver
-  */
   var armies = [new Army(2,3,1), new Army(1,1,1), new Army(0,1,1)];
   var d = new Division( armies );
   while( d.pool.numUnits() > 0 ) {
     d.eliminateUnits( 1 );
   } 
+  */
 
 } );
 
