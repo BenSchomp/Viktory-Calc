@@ -73,7 +73,7 @@
               <tr>
                 <td class="calc-label mod-label">Bombard Attacks:</td>
                 <td>
-                  <input type="number" id="attacker-bombards-1" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
+                  <input type="number" id="attacker-bombards-2" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
                 </td>
               </tr>
             </table>
@@ -107,7 +107,7 @@
               <tr>
                 <td class="calc-label mod-label">Bombard Attacks:</td>
                 <td>
-                  <input type="number" id="attacker-bombards-1" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
+                  <input type="number" id="attacker-bombards-3" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
                 </td>
               </tr>
             </table>
@@ -141,7 +141,7 @@
               <tr>
                 <td class="calc-label mod-label">Bombard Attacks:</td>
                 <td>
-                  <input type="number" id="attacker-bombards-1" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
+                  <input type="number" id="attacker-bombards-4" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
                 </td>
               </tr>
             </table>
@@ -174,7 +174,7 @@
               <tr>
                 <td class="calc-label mod-label">Bombard Attacks:</td>
                 <td>
-                  <input type="number" id="attacker-bombards-1" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
+                  <input type="number" id="attacker-bombards-5" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
                 </td>
               </tr>
             </table>
@@ -208,7 +208,7 @@
               <tr>
                 <td class="calc-label mod-label">Bombard Attacks:</td>
                 <td>
-                  <input type="number" id="attacker-bombards-1" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
+                  <input type="number" id="attacker-bombards-6" class="align-right col-width dice-modifier reset-zero" value="0" min="0" max="99" />
                 </td>
               </tr>
             </table>
@@ -274,6 +274,62 @@
             </table>
           </div>
         </div>
+      <div id="misc-div">
+        <fieldset class="fieldset-auto-width" id="fieldset-global">
+          <legend align="left">Game State</legend>
+          <table id="-table">
+            <thead>
+              <tr>
+                <th />
+                <th>Attacker</th>
+                <th>Defender</th>
+              </tr>
+            </thead>
+            <tr>
+              <td class="calc-label mod-label">Combat Supply:</td>
+              <td>
+                <input type="radio" name="attackercombatsupply" value="no" class="dice-modifier reset" />
+                <label class="mod-label">No</label>
+                <input type="radio" name="attackercombatsupply" value="yes" class="dice-modifier" />
+                <label class="mod-label">Yes</label>
+              </td>
+              <td>
+                <input type="radio" name="defendercombatsupply" value="no" class="dice-modifier reset" />
+                <label class="mod-label">No</label>
+                <input type="radio" name="defendercombatsupply" value="yes" class="dice-modifier" />
+                <label class="mod-label">Yes</label>
+              </td>
+            </tr>
+            <tr>
+              <td class="calc-label mod-label">Lost Capital:</td>
+              <td></td>
+              <td>
+                <input type="radio" name="defenderlostcapital" value="no" class="dice-modifier reset" />
+                <label class="mod-label">No</label>
+                <input type="radio" name="defenderlostcapital" value="yes" class="dice-modifier" />
+                <label class="mod-label">Yes</label>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <hr width="80%"/>
+          <br />
+          <div>
+            <label class="mod-label align-right">Include Pre-Battle Artillery Fire?</label>
+            <input type="radio" name="noprebattle" value="no" class="mod-label dice-modifier noprebattle" />
+            <label class="mod-label">No</label>
+            <input type="radio" name="noprebattle" value="yes" class="mod-label dice-modifier noprebattle reset" />
+            <label class="mod-label">Yes</label>
+          </div>
+          <br />
+          <div id="button-div">
+            <input type="submit" value="Calculate" id="calculatebutton" onclick="runSim();" disabled="disabled" />
+            <input type="submit" value="  Clear  " id="resetbutton" onclick="resetForm();" />
+          </div>
+          </tr>
+          </table>
+        </fieldset>
+      </div>
       </form>
     </div>
 
@@ -349,62 +405,7 @@
         </table>
       </fieldset>
     </div>
-        <div id="misc-div">
-      <fieldset class="fieldset-auto-width" id="fieldset-global">
-        <legend align="left">Game State</legend>
-        <table id="-table">
-          <thead>
-            <tr>
-              <th />
-              <th>Attacker</th>
-              <th>Defender</th>
-            </tr>
-          </thead>
-          <tr>
-            <td class="calc-label mod-label">Combat Supply:</td>
-            <td>
-              <input type="radio" name="attackercombatsupply" value="no" class="dice-modifier reset" />
-              <label class="mod-label">No</label>
-              <input type="radio" name="attackercombatsupply" value="yes" class="dice-modifier" />
-              <label class="mod-label">Yes</label>
-            </td>
-            <td>
-              <input type="radio" name="defendercombatsupply" value="no" class="dice-modifier reset" />
-              <label class="mod-label">No</label>
-              <input type="radio" name="defendercombatsupply" value="yes" class="dice-modifier" />
-              <label class="mod-label">Yes</label>
-            </td>
-          </tr>
-          <tr>
-            <td class="calc-label mod-label">Lost Capital:</td>
-            <td></td>
-            <td>
-              <input type="radio" name="defenderlostcapital" value="no" class="dice-modifier reset" />
-              <label class="mod-label">No</label>
-              <input type="radio" name="defenderlostcapital" value="yes" class="dice-modifier" />
-              <label class="mod-label">Yes</label>
-            </td>
-          </tr>
-        </table>
-        <br />
-        <hr width="80%"/>
-        <br />
-        <div>
-          <label class="mod-label align-right">Include Pre-Battle Artillery Fire?</label>
-          <input type="radio" name="noprebattle" value="no" class="mod-label dice-modifier noprebattle" />
-          <label class="mod-label">No</label>
-          <input type="radio" name="noprebattle" value="yes" class="mod-label dice-modifier noprebattle reset" />
-          <label class="mod-label">Yes</label>
-        </div>
-        <br />
-        <div id="button-div">
-          <input type="submit" value="Calculate" id="calculatebutton" onclick="runSim();" disabled="disabled" />
-          <input type="submit" value="  Clear  " id="resetbutton" onclick="reset();" />
-        </div>
-        </tr>
-        </table>
-      </fieldset>
-    </div>
+
   </div>
 </body>
 

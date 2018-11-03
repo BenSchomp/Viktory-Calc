@@ -3,8 +3,8 @@ var CAV = 1;
 var ART = 2;
 
 function Division( armies ) {
-  this.armies = [];
-  this.pool = new Army();
+  this.armies = []; // each individual Army in the Divion (1 for each attacking hex)
+  this.pool = new Army(); // the total force pool of all armies added together
 
   for( var a=0; a<armies.length; a++ ) {
     var cur = armies[a];
@@ -14,17 +14,34 @@ function Division( armies ) {
     }
   }
 
+  this.hasUnits = function() {
+    return this.pool.hasUnits();
+  }
+
+  this.numInf = function() {
+    return this.pool.troops[INF];
+  }
+
+  this.numCav = function() {
+    return this.pool.troops[CAV];
+  }
+
+  this.numArt = function() {
+    return this.pool.troops[ART];
+  }
+
   this.text = function() {
     var division_text = '';
     for( var i=0; i < this.armies.length; i++ ) {
       cur = this.armies[i];
-      division_text += cur.text( String(i) + ':' ) + cur.elim_text( ' ' ) + '\n';
+      //division_text += cur.text( String(i) + ':' ) + cur.elim_text( ' ' ) + '\n';
+      division_text += cur.text( '  ' ) + cur.elim_text( ' ' ) + '\n';
     }
     return division_text;
   };
 
   this.debug = function() {
-    console.log( '   0   1   2' );
+    //console.log( '   0   1   2' );
     console.log( this.text() );
     console.log( ' + ---------' );
     console.log( this.pool.text( '  ' ) );
@@ -53,11 +70,13 @@ function Division( armies ) {
   */
   this.eliminateUnits = function( dieRoll ) {
     var num_armies = this.armies.length;
+    var num_troops = 0;
 
     // --- calculate elimination weights for each army ---
     for (var a=0; a<num_armies; a++) {
       var cur = this.armies[a];
       var num_units = cur.numUnits();
+      num_troops += num_units;
 
       if( num_units == 0 ) {
         continue;
@@ -83,6 +102,10 @@ function Division( armies ) {
           }
         }
       }
+    }
+
+    if( num_troops < 1 ) {
+      return false;
     }
 
     // sort armies by num_units to break weight ties (try to get rid of
@@ -119,10 +142,6 @@ function Division( armies ) {
       }
     }
 
-    if( pool_min < 1 ) {
-      return;
-    }
-
     for( var t=0; t<3; t++ ) {
       for( var a=0; a<num_armies; a++ ) {
         var cur = this.armies[a];
@@ -151,7 +170,7 @@ function Division( armies ) {
       }
     }
 
-    this.debug();
+    //this.debug();
 
     // for each non-zero weight, find the min and max, and store their location
     var elim_min = 999;
@@ -191,8 +210,7 @@ function Division( armies ) {
       this.armies[ elim_min_target[0] ].eliminateUnit( elim_min_target[1] );
       this.pool.eliminateUnit( elim_min_target[1] );
     }
-
-    //this.debug();
+    return true;
   }
 }
 
@@ -366,23 +384,36 @@ function displayWinResults( attackerWins, defenderWins, ties, n )
 
 function displayUnitResults( label, totals, n )
 {
-  $("#" + label + "-infantry-results").val( totals.infantry / n );
-  $("#" + label + "-cavalry-results").val( totals.cavalry / n );
-  $("#" + label + "-artillery-results").val( totals.artillery / n );
+  $("#" + label + "-infantry-results").val( totals.troops[INF] / n );
+  $("#" + label + "-cavalry-results").val( totals.troops[CAV] / n );
+  $("#" + label + "-artillery-results").val( totals.troops[ART] / n );
 }
 
 
 function runOneSim() {
-  var attacker = new Army(
-    $("#attacker-infantry-1").val(),
-    $("#attacker-cavalry-1").val(),
-    $("#attacker-artillery-1").val()
-  );
-  var defender = new Army(
-    $("#defender-infantry").val(),
-    $("#defender-cavalry").val(),
-    $("#defender-artillery").val()
-  );
+  var armies = [];
+  var bombardAttacks = 0;
+
+  for(var i=1; i<7; i++) {
+    var cur = new Army( $("#attacker-infantry-"+i).val(),
+                        $("#attacker-cavalry-"+i).val(),
+                        $("#attacker-artillery-"+i).val() );
+
+    if(cur.hasUnits()) {
+      $("#side-"+i).css('visibility', 'visible');
+    } else {
+      $("#side-"+i).css('visibility', 'hidden');
+    }
+
+    bombardAttacks += parseInt($("#attacker-bombards-"+i).val());
+    armies.push(cur);
+  } 
+
+  var attackerD = new Division( armies );
+  armies = [ new Army( $("#defender-infantry").val(),
+                       $("#defender-cavalry").val(),
+                       $("#defender-artillery").val() ) ];
+  var defenderD = new Division( armies );
 
   var attackerHighHit = 3;
   if( $('input:radio[name=attackercombatsupply]:checked').val() == "yes" )
@@ -397,53 +428,52 @@ function runOneSim() {
   var numRounds = 0;
 
   // bombard attacks occur before battle begins
-  var bombardAttacks = $("#attacker-bombards-1").val();
   for( i = 0; i < bombardAttacks; i++ )
   {
     roll = Math.floor((Math.random()*6)+1);
     if( roll <= attackerHighHit )
-    { defender.eliminateUnits( roll ); }
+    { defenderD.eliminateUnits( roll ); }
   }
 
   // pre-battle artillery fire
   if( ! isNoPreBattle() )
   {
     // store a copy of the defender's pre-attack artillery count
-    var defenderArtilleryCopy = defender.artillery;
+    var defenderArtilleryCopy = defenderD.numArt();
 
-    for( i = 0; i < attacker.artillery; i++ )
+    for( i = 0; i < attackerD.numArt(); i++ )
     {
       roll = Math.floor((Math.random()*6)+1);
       if( roll <= attackerHighHit )
-      { defender.eliminateUnits( roll ); }
+      { defenderD.eliminateUnits( roll ); }
     }
 
     for( i = 0; i < defenderArtilleryCopy; i++ )
     {
       roll = Math.floor((Math.random()*6)+1);
       if( roll <= defenderHighHit )
-      { attacker.eliminateUnits( roll ); }
+      { attackerD.eliminateUnits( roll ); }
     }
   }
 
   // now only do battle if the attacker has units and/or the
   //  defender has units or we're in a town or city hex
-  if( attacker.hasUnits() && ( defender.hasUnits() || isTownOrCity() ) )
+  if( attackerD.hasUnits() && ( defenderD.hasUnits() || isTownOrCity() ) )
   {
     do
     {
       // store a copy of the defender's pre-attack unit counts
-      var defenderCopy = new Army( defender.infantry, defender.cavalry, defender.artillery );
+      var defenderCopy = new Army( defenderD.numInf(), defenderD.numCav(), defenderD.numArt() );
 
       // roll for attacker
       var attackerExtraHits = 0;
-      var attackerNumDice = attacker.getAttackerDice(); // *** TODO ... attacker needs to be a Division
+      var attackerNumDice = attackerD.getAttackerDice();
       for( i = 0; i < attackerNumDice; i++ )
       {
         roll = Math.floor((Math.random()*6)+1);
         if( roll <= attackerHighHit )
         { 
-          if( ! defender.eliminateUnits( roll ) )
+          if( ! defenderD.eliminateUnits( roll ) )
           { attackerExtraHits++; }
         }
       }
@@ -454,18 +484,17 @@ function runOneSim() {
       {
         roll = Math.floor((Math.random()*6)+1);
         if( roll <= defenderHighHit )
-        { attacker.eliminateUnits( roll ); }
+        { attackerD.eliminateUnits( roll ); }
       }
 
       numRounds++;
-    } while( attacker.hasUnits() && defender.hasUnits() );
+    } while( attackerD.hasUnits() && defenderD.hasUnits() );
   }
   
-  return { "attacker": attacker, "defender": defender, "numRounds": numRounds };
+  return { "attacker": attackerD.pool, "defender": defenderD.pool, "numRounds": numRounds };
 }
 
 function runSim() {
-  console.log('runSim()');
   var attackerTotals = new Army();
   var defenderTotals = new Army();
   var numRoundsTotal = 0;
@@ -499,6 +528,7 @@ function runSim() {
 function update() {
   console.log( 'update()' );
   var armies = [];
+  var hasAttackerArtillery = false;
 
   for(var i=1; i<7; i++) {
     var cur = new Army(
@@ -510,6 +540,10 @@ function update() {
       $("#side-"+i).css('visibility', 'visible');
     } else {
       $("#side-"+i).css('visibility', 'hidden');
+    }
+
+    if( parseInt( $("#attacker-artillery-"+i).val() ) > 0 ) {
+      hasAttackerArtillery = true;
     }
 
     armies.push(cur);
@@ -534,8 +568,7 @@ function update() {
   else
   { $("#calculatebutton").attr( "disabled", "disabled" ); }
 
-  // TODO
-  if( $("#attacker-artillery").val() > 0 || $("#defender-artillery").val() > 0 )
+  if( hasAttackerArtillery || parseInt( $("#defender-artillery").val() ) > 0 )
   { $(".noprebattle").attr( "disabled", false ); }
   else
   { $(".noprebattle").attr( "disabled", "disabled" ); }
@@ -543,10 +576,12 @@ function update() {
 }
 
 function clearResults() {
+  console.log( 'clearResults()' );
   $("#results-table :input").css( "background", "" );
 }
 
 function reset() {
+  console.log( 'reset()');
   $(".reset-zero").each( function() {
     this.value = "0";
   } );
@@ -568,9 +603,10 @@ $(document).ready( function () {
   } );
   reset();
 
-  /* ***
-    test driver
-  var armies = [new Army(2,3,1), new Army(1,1,1), new Army(0,1,1)];
+  //test driver
+  /*
+  //var armies = [new Army(2,3,1), new Army(1,1,1), new Army(0,1,1)];
+  var armies = [new Army(1,0,1)];
   var d = new Division( armies );
   while( d.pool.numUnits() > 0 ) {
     d.eliminateUnits( 1 );
