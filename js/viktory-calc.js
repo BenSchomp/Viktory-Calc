@@ -526,7 +526,6 @@ function runSim() {
 }
 
 function update() {
-  console.log( 'update()' );
   var armies = [];
   var hasAttackerArtillery = false;
 
@@ -576,12 +575,10 @@ function update() {
 }
 
 function clearResults() {
-  console.log( 'clearResults()' );
   $("#results-table :input").css( "background", "" );
 }
 
-function reset() {
-  console.log( 'reset()');
+function resetForm() {
   $(".reset-zero").each( function() {
     this.value = "0";
   } );
@@ -601,7 +598,7 @@ $(document).ready( function () {
     clearResults();
     update();
   } );
-  reset();
+  resetForm();
 
   //test driver
   /*
