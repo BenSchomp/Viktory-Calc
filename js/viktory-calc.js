@@ -2,6 +2,8 @@ var INF = 0;
 var CAV = 1;
 var ART = 2;
 
+var DEBUG = true;
+
 function Division( armies ) {
   this.armies = []; // each individual Army in the Divion (1 for each attacking hex)
   this.pool = new Army(); // the total force pool of all armies added together
@@ -30,24 +32,18 @@ function Division( armies ) {
     return this.pool.troops[ART];
   }
 
-  this.text = function() {
-    var division_text = '';
+  this.print = function( label, showElimWeights=false, level ) {
+    var division_text = label;
     for( var i=0; i < this.armies.length; i++ ) {
       cur = this.armies[i];
-      //division_text += cur.text( String(i) + ':' ) + cur.elim_text( ' ' ) + '\n';
-      division_text += cur.text( '  ' ) + cur.elim_text( ' ' ) + '\n';
-    }
-    return division_text;
-  };
 
-  this.debug = function() {
-    //console.log( '   0   1   2' );
-    console.log( this.text() );
-    console.log( ' + ---------' );
-    console.log( this.pool.text( '  ' ) );
-    //console.log( this.pool.text( '  ' ) + ' ... min: [ ' + elim_min_target[0] + ', ' + elim_min_target[1] + ' ]');
-    //console.log( '                 max: [ ' + elim_max_target[0] + ', ' + elim_max_target[1] + ' ]')
-    console.log( '\n' );
+      division_text += cur.text();
+      if( showElimWeights ) {
+        division_text += cur.elim_text( ' ' );
+      }
+      debug( division_text, level );
+      division_text = ' '.repeat(label.length);
+    }
   };
 
   this.getAttackerDice = function() {
@@ -105,6 +101,7 @@ function Division( armies ) {
     }
 
     if( num_troops < 1 ) {
+      debug( '(force depleted)', 3);
       return false;
     }
 
@@ -170,7 +167,7 @@ function Division( armies ) {
       }
     }
 
-    //this.debug();
+    this.print('before:', true, 3);
 
     // for each non-zero weight, find the min and max, and store their location
     var elim_min = 999;
@@ -210,6 +207,8 @@ function Division( armies ) {
       this.armies[ elim_min_target[0] ].eliminateUnit( elim_min_target[1] );
       this.pool.eliminateUnit( elim_min_target[1] );
     }
+
+    this.print('after: ', false, 3);
     return true;
   }
 }
@@ -428,31 +427,52 @@ function runOneSim() {
   var numRounds = 0;
 
   // bombard attacks occur before battle begins
+  if( bombardAttacks > 0 ) {
+    debug( '+ Bombard Attacks:' );
+    debug( 'Attacker rolling ' + bombardAttacks + ' dice ...', 1 );
+  }
   for( i = 0; i < bombardAttacks; i++ )
   {
     roll = Math.floor((Math.random()*6)+1);
-    if( roll <= attackerHighHit )
-    { defenderD.eliminateUnits( roll ); }
+    if( roll <= attackerHighHit ) {
+      debug( hit(roll), 2 );
+      defenderD.eliminateUnits( roll );
+    }
   }
 
   // pre-battle artillery fire
   if( ! isNoPreBattle() )
   {
     // store a copy of the defender's pre-attack artillery count
-    var defenderArtilleryCopy = defenderD.numArt();
+    var defenderCopyNumArt = defenderD.numArt();
+    var attackerNumArt = attackerD.numArt();
 
+    if( attackerNumArt > 0 || defenderCopyNumArt > 0 ) {
+      debug( '+ Pre-Battle Atrillery:' );
+    }
+
+    if( attackerNumArt > 0 ) {
+      debug( 'Attacker rolling ' + attackerNumArt + ' dice ...', 1 );
+    }
     for( i = 0; i < attackerD.numArt(); i++ )
     {
       roll = Math.floor((Math.random()*6)+1);
-      if( roll <= attackerHighHit )
-      { defenderD.eliminateUnits( roll ); }
+      if( roll <= attackerHighHit ) {
+        debug( hit(roll), 2 );
+        defenderD.eliminateUnits( roll );
+      }
     }
 
-    for( i = 0; i < defenderArtilleryCopy; i++ )
+    if( defenderCopyNumArt > 0 ) {
+      debug( 'Defender rolling ' + defenderCopyNumArt + ' dice ...', 1 );
+    }
+    for( i = 0; i < defenderCopyNumArt; i++ )
     {
       roll = Math.floor((Math.random()*6)+1);
-      if( roll <= defenderHighHit )
-      { attackerD.eliminateUnits( roll ); }
+      if( roll <= defenderHighHit ) {
+        debug( hit(roll), 2 );
+        attackerD.eliminateUnits( roll );
+      }
     }
   }
 
@@ -462,17 +482,20 @@ function runOneSim() {
   {
     do
     {
+      debug( "+ Battle Round: " + (numRounds + 1) );
       // store a copy of the defender's pre-attack unit counts
       var defenderCopy = new Army( defenderD.numInf(), defenderD.numCav(), defenderD.numArt() );
 
       // roll for attacker
       var attackerExtraHits = 0;
       var attackerNumDice = attackerD.getAttackerDice();
+      debug( 'Attacker rolling ' + attackerNumDice + ' dice ...', 1 );
       for( i = 0; i < attackerNumDice; i++ )
       {
         roll = Math.floor((Math.random()*6)+1);
         if( roll <= attackerHighHit )
         { 
+          debug( hit(roll), 2 );
           if( ! defenderD.eliminateUnits( roll ) )
           { attackerExtraHits++; }
         }
@@ -480,11 +503,14 @@ function runOneSim() {
 
       // roll for defender
       var defenderNumDice = defenderCopy.getDefenderDice( attackerExtraHits );
+      debug( 'Defender rolling ' + defenderNumDice + ' dice ...', 1 );
       for( i = 0; i < defenderNumDice; i++ )
       {
         roll = Math.floor((Math.random()*6)+1);
-        if( roll <= defenderHighHit )
-        { attackerD.eliminateUnits( roll ); }
+        if( roll <= defenderHighHit ) {
+          debug( hit(roll), 2 );
+          attackerD.eliminateUnits( roll );
+        }
       }
 
       numRounds++;
@@ -502,19 +528,25 @@ function runSim() {
   var defenderWins = 0;
   var ties = 0;
 
-  var n = 1000;
+  var n = 10; // 00;
   var i = 0;
   for( i = 0; i < n; i++ )
   {
+    debug( '--- Run ' + (i+1) + ' ---' );
     var results = runOneSim();
     attackerTotals.add( results.attacker );
     defenderTotals.add( results.defender );
-    if( results.attacker.hasUnits() )
-    { attackerWins++; }
-    else if( results.defender.hasUnits() )
-    { defenderWins++; }
-    else
-    { ties++; }
+    if( results.attacker.hasUnits() ) {
+      debug( "** Attacker wins!" );
+      attackerWins++;
+    } else if( results.defender.hasUnits() ) {
+      debug( "** Defender wins!" );
+      defenderWins++;
+    } else {
+      debug( "** Tie." );
+      ties++;
+    }
+    debug( "\n" );
 
     numRoundsTotal += results.numRounds;
   }
@@ -524,8 +556,10 @@ function runSim() {
   displayUnitResults( "defender", defenderTotals, n );
   $("#numRounds-results").val( numRoundsTotal / n );
 
+  debug( '--- Done. ---' );
+
   // log results
-  $.post( "logger.php", { name: "John", time: "2pm" } );
+  $.post( "logger.php" );
 }
 
 function update() {
@@ -596,22 +630,38 @@ function resetForm() {
   update();
 }
 
+function indent( level=0, label='' ) {
+  var result = '';
+  for( var i=0; i<label.length; i++ ) {
+    result += ' ';
+  }
+
+  for( var i=0; i<level; i++) {
+    result += '  ';
+  }
+  return result;
+}
+
+function hit( roll ) {
+  var result = 'hit: ' + roll;
+  if( roll == 1 ) {
+    result += ' * (critical)';
+  }
+  return result;
+}
+
+function debug( text, level=0 ) {
+  if( DEBUG ) {
+    console.log( indent(level) + text );
+  }
+}
+
 $(document).ready( function () {
   $('.dice-modifier').bind( 'change', function() {
     clearResults();
     update();
   } );
   resetForm();
-
-  //test driver
-  /*
-  //var armies = [new Army(2,3,1), new Army(1,1,1), new Army(0,1,1)];
-  var armies = [new Army(1,0,1)];
-  var d = new Division( armies );
-  while( d.pool.numUnits() > 0 ) {
-    d.eliminateUnits( 1 );
-  } 
-  */
 
 } );
 
