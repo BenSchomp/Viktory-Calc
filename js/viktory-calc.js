@@ -523,6 +523,9 @@ function runSim() {
   displayUnitResults( "attacker", attackerTotals, n );
   displayUnitResults( "defender", defenderTotals, n );
   $("#numRounds-results").val( numRoundsTotal / n );
+
+  // log results
+  $.post( "logger.php", { name: "John", time: "2pm" } );
 }
 
 function update() {
