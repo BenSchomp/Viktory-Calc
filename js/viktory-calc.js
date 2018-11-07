@@ -88,7 +88,7 @@ function Division( armies ) {
           }
 
           // 2nd bit is to weigh ART > CAV > INF
-          cur.elim_weights[t] += (t*0.1)
+          cur.elim_weights[t] += (t+1)*0.1
 
           // singles are valuable - eliminate first if possible
           if( cur.troops[t] == 1 ) {
@@ -148,7 +148,7 @@ function Division( armies ) {
 
         if( cur.troops[t] > 0 ) {
           // all troops get weighted by their row order (breaks ties)
-          cur.elim_weights[t] += (a*0.001);
+          cur.elim_weights[t] += (a*0.01);
 
           // each troop of the current type gets weighed lowest to highest
           if( this.pool.troops[t] == pool_min ) { // lowest type
@@ -236,9 +236,9 @@ function Army( infantry, cavalry, artillery )
   };
 
   this.elim_text = function( label='' ) {
-    return label + ' ( ' + this.elim_weights[0].toFixed(3) + ' / '
-                         + this.elim_weights[1].toFixed(3) + ' / '
-                         + this.elim_weights[2].toFixed(3) + ' )';
+    return label + ' ( ' + this.elim_weights[0].toFixed(2) + ' / '
+                         + this.elim_weights[1].toFixed(2) + ' / '
+                         + this.elim_weights[2].toFixed(2) + ' )';
   };
 
   this.add = function( rhs ) {
