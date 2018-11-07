@@ -2,7 +2,7 @@ var INF = 0;
 var CAV = 1;
 var ART = 2;
 
-var DEBUG = true;
+var DEBUG = false;
 
 function Division( armies ) {
   this.armies = []; // each individual Army in the Divion (1 for each attacking hex)
@@ -528,7 +528,7 @@ function runSim() {
   var defenderWins = 0;
   var ties = 0;
 
-  var n = 10; // 00;
+  var n = 1000;
   var i = 0;
   for( i = 0; i < n; i++ )
   {
