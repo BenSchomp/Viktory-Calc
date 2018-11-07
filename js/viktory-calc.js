@@ -235,9 +235,9 @@ function Army( infantry, cavalry, artillery )
   };
 
   this.elim_text = function( label='' ) {
-    return label + ' [ ' + this.elim_weights[0].toFixed(2) + ' / '
+    return label + ' ( ' + this.elim_weights[0].toFixed(2) + ' / '
                          + this.elim_weights[1].toFixed(2) + ' / '
-                         + this.elim_weights[2].toFixed(2) + ' ]';
+                         + this.elim_weights[2].toFixed(2) + ' )';
   };
 
   this.add = function( rhs ) {
@@ -557,6 +557,9 @@ function runSim() {
   $("#numRounds-results").val( numRoundsTotal / n );
 
   debug( '--- Done. ---' );
+
+  // log results
+  $.post( "logger.php" );
 }
 
 function update() {
