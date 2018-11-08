@@ -1,8 +1,7 @@
+var DEBUG = false;
 var INF = 0;
 var CAV = 1;
 var ART = 2;
-
-var DEBUG = false;
 
 function Division( armies ) {
   this.armies = []; // each individual Army in the Divion (1 for each attacking hex)
@@ -15,6 +14,12 @@ function Division( armies ) {
       this.pool.add( cur );
     }
   }
+
+  /*
+    TODO: write a copy constructor and object serializer
+           need to be able to output the entire game state to the results.log
+           might also be nice to be able to start saving url's
+  */
 
   this.hasUnits = function() {
     return this.pool.hasUnits();
@@ -390,17 +395,16 @@ function displayUnitResults( label, totals, n )
 
 function rollDice( label, numDice, highHit, targetD ) {
   var diceText = 'dice';
-
-  if( numDice < 1 ) {
-    return 0;
-  } else if( numDice == 1 ) {
+  if( numDice == 1 ) {
     diceText = 'die';
+  } else if( numDice < 1 ) {
+    return 0; // no dice to roll
   }
   debug( label + ' rolling ' + numDice + ' ' + diceText + ' ...', 1 );
 
   var rolls = [];
   var extraHits = 0;
-  for( var i = 0; i < numDice; i++ ) {
+  for( var i=0; i<numDice; i++ ) {
     rolls.push( Math.floor((Math.random()*6)+1) );
   }
   rolls.sort();
@@ -418,6 +422,7 @@ function rollDice( label, numDice, highHit, targetD ) {
     debug( text, 2 );
 
     if( ! targetD.eliminateUnits( roll ) ) {
+      // defender supression
       extraHits++;
     }
   }
@@ -458,9 +463,6 @@ function runOneSim() {
   if( $('input:radio[name=defendercombatsupply]:checked').val() == "yes" )
   { defenderHighHit++; }
 
-  var i = 0;
-  var roll = 6;
-  var numRounds = 0;
 
   // bombard attacks occur before battle begins
   if( bombardAttacks > 0 ) {
@@ -483,6 +485,7 @@ function runOneSim() {
 
   // now only do battle if the attacker has units and/or the
   //  defender has units or we're in a town or city hex
+  var numRounds = 0;
   if( attackerD.hasUnits() && ( defenderD.hasUnits() || isTownOrCity() ) )
   {
     do
@@ -515,13 +518,14 @@ function runSim() {
   var ties = 0;
 
   var n = 1000;
-  var i = 0;
-  for( i = 0; i < n; i++ )
+  for( var i=0; i<n; i++ )
   {
     debug( '--- Run ' + (i+1) + ' ---' );
     var results = runOneSim();
+
     attackerTotals.add( results.attacker );
     defenderTotals.add( results.defender );
+
     if( results.attacker.hasUnits() ) {
       debug( "** Attacker wins!" );
       attackerWins++;
@@ -543,9 +547,7 @@ function runSim() {
   $("#numRounds-results").val( numRoundsTotal / n );
 
   debug( '--- Done. ---' );
-
-  // log results
-  $.post( "logger.php" );
+  $.post( "logger.php" ); // write result to server log
 }
 
 function update() {
