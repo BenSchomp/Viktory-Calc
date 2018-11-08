@@ -235,9 +235,9 @@ function Army( infantry, cavalry, artillery )
   };
 
   this.elim_text = function( label='' ) {
-    return label + ' ( ' + this.elim_weights[0].toFixed(2) + ' / '
+    return label + ' [ ' + this.elim_weights[0].toFixed(2) + ' / '
                          + this.elim_weights[1].toFixed(2) + ' / '
-                         + this.elim_weights[2].toFixed(2) + ' )';
+                         + this.elim_weights[2].toFixed(2) + ' ]';
   };
 
   this.add = function( rhs ) {
@@ -388,6 +388,42 @@ function displayUnitResults( label, totals, n )
   $("#" + label + "-artillery-results").val( totals.troops[ART] / n );
 }
 
+function rollDice( label, numDice, highHit, targetD ) {
+  var diceText = 'dice';
+
+  if( numDice < 1 ) {
+    return 0;
+  } else if( numDice == 1 ) {
+    diceText = 'die';
+  }
+  debug( label + ' rolling ' + numDice + ' ' + diceText + ' ...', 1 );
+
+  var rolls = [];
+  var extraHits = 0;
+  for( var i = 0; i < numDice; i++ ) {
+    rolls.push( Math.floor((Math.random()*6)+1) );
+  }
+  rolls.sort();
+
+  for( var i=0; i<rolls.length; i++ ) {
+    var roll = rolls[i];
+    if( roll > highHit ) {
+      break; // rolls is sorted, everything here and after are misses
+    }
+
+    var text = 'Hit: ' + roll;
+    if( roll == 1 ) {
+      text += ' (tactical)';
+    }
+    debug( text, 2 );
+
+    if( ! targetD.eliminateUnits( roll ) ) {
+      extraHits++;
+    }
+  }
+
+  return extraHits;
+}
 
 function runOneSim() {
   var armies = [];
@@ -429,50 +465,19 @@ function runOneSim() {
   // bombard attacks occur before battle begins
   if( bombardAttacks > 0 ) {
     debug( '+ Bombard Attacks:' );
-    debug( 'Attacker rolling ' + bombardAttacks + ' dice ...', 1 );
-  }
-  for( i = 0; i < bombardAttacks; i++ )
-  {
-    roll = Math.floor((Math.random()*6)+1);
-    if( roll <= attackerHighHit ) {
-      debug( hit(roll), 2 );
-      defenderD.eliminateUnits( roll );
-    }
+    rollDice( 'Attacker', bombardAttacks, attackerHighHit, defenderD );
   }
 
   // pre-battle artillery fire
   if( ! isNoPreBattle() )
   {
-    // store a copy of the defender's pre-attack artillery count
-    var defenderCopyNumArt = defenderD.numArt();
+    var defenderNumArt = defenderD.numArt();
     var attackerNumArt = attackerD.numArt();
 
-    if( attackerNumArt > 0 || defenderCopyNumArt > 0 ) {
+    if( attackerNumArt > 0 || defenderNumArt > 0 ) {
       debug( '+ Pre-Battle Atrillery:' );
-    }
-
-    if( attackerNumArt > 0 ) {
-      debug( 'Attacker rolling ' + attackerNumArt + ' dice ...', 1 );
-    }
-    for( i = 0; i < attackerD.numArt(); i++ )
-    {
-      roll = Math.floor((Math.random()*6)+1);
-      if( roll <= attackerHighHit ) {
-        debug( hit(roll), 2 );
-        defenderD.eliminateUnits( roll );
-      }
-    }
-
-    if( defenderCopyNumArt > 0 ) {
-      debug( 'Defender rolling ' + defenderCopyNumArt + ' dice ...', 1 );
-    }
-    for( i = 0; i < defenderCopyNumArt; i++ )
-    {
-      roll = Math.floor((Math.random()*6)+1);
-      if( roll <= defenderHighHit ) {
-        debug( hit(roll), 2 );
-        attackerD.eliminateUnits( roll );
-      }
+      rollDice( 'Attacker', attackerNumArt, attackerHighHit, defenderD );
+      rollDice( 'Defender', defenderNumArt, defenderHighHit, attackerD );
     }
   }
 
@@ -487,31 +492,12 @@ function runOneSim() {
       var defenderCopy = new Army( defenderD.numInf(), defenderD.numCav(), defenderD.numArt() );
 
       // roll for attacker
-      var attackerExtraHits = 0;
       var attackerNumDice = attackerD.getAttackerDice();
-      debug( 'Attacker rolling ' + attackerNumDice + ' dice ...', 1 );
-      for( i = 0; i < attackerNumDice; i++ )
-      {
-        roll = Math.floor((Math.random()*6)+1);
-        if( roll <= attackerHighHit )
-        { 
-          debug( hit(roll), 2 );
-          if( ! defenderD.eliminateUnits( roll ) )
-          { attackerExtraHits++; }
-        }
-      }
+      var attackerExtraHits = rollDice( 'Attacker', attackerNumDice, attackerHighHit, defenderD );
 
       // roll for defender
       var defenderNumDice = defenderCopy.getDefenderDice( attackerExtraHits );
-      debug( 'Defender rolling ' + defenderNumDice + ' dice ...', 1 );
-      for( i = 0; i < defenderNumDice; i++ )
-      {
-        roll = Math.floor((Math.random()*6)+1);
-        if( roll <= defenderHighHit ) {
-          debug( hit(roll), 2 );
-          attackerD.eliminateUnits( roll );
-        }
-      }
+      rollDice( 'Defender', defenderNumDice, defenderHighHit, attackerD );
 
       numRounds++;
     } while( attackerD.hasUnits() && defenderD.hasUnits() );
@@ -638,14 +624,6 @@ function indent( level=0, label='' ) {
 
   for( var i=0; i<level; i++) {
     result += '  ';
-  }
-  return result;
-}
-
-function hit( roll ) {
-  var result = 'hit: ' + roll;
-  if( roll == 1 ) {
-    result += ' * (critical)';
   }
   return result;
 }
